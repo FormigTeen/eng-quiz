@@ -1,0 +1,52 @@
+version: "3.3"
+
+services:
+
+
+  greeter:
+    build:
+      context: .
+    image: pong
+    env_file:
+      - ../.env
+      - docker-compose.env
+    environment:
+      SERVICES: greeter
+    depends_on:
+      - nats
+    networks:
+      - internal
+
+  products:
+    build:
+      context: .
+    image: pong
+    env_file:
+      - ../.env
+      - docker-compose.env
+    environment:
+      SERVICES: products
+    depends_on:
+      - mongo
+      - nats
+    networks:
+      - internal
+
+  mongo:
+    image: mongo:4
+    volumes:
+      - data:/data/db
+    networks:
+      - internal
+
+  nats:
+    image: nats:2
+    networks:
+      - internal
+
+
+networks:
+  internal:
+
+volumes:
+  data:

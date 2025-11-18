@@ -1,0 +1,68 @@
+version: "3.9"
+
+services:
+  mongodb:
+    image: mongo:6
+    restart: unless-stopped
+    volumes:
+      - mongo-data:/data/db
+
+  nats:
+    image: nats:2-alpine
+    command: ["-js"]
+    restart: unless-stopped
+
+  gateway:
+    build: ./gateway
+    env_file: .env
+    depends_on:
+      - nats
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+
+  ping:
+    build: ./ping
+    env_file: .env
+    depends_on:
+      - nats
+    restart: unless-stopped
+
+  pong:
+    build: ./pong
+    env_file: .env
+    depends_on:
+      - nats
+    restart: unless-stopped
+
+  ws:
+    build: ./ws
+    env_file: .env
+    depends_on:
+      - nats
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
+  auth:
+    build: ./auth
+    env_file: .env
+    depends_on:
+      - nats
+      - mongodb
+    restart: unless-stopped
+
+  content:
+    build: ./content
+    env_file: .env
+    depends_on:
+      - nats
+      - mongodb
+    restart: unless-stopped
+
+networks:
+  default:
+    name: eng-quiz-net
+
+volumes:
+  mongo-data:

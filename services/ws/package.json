@@ -1,0 +1,17 @@
+{
+  "name": "ws-server",
+  "version": "1.0.0",
+  "description": "WebSocket server as Moleculer node",
+  "scripts": {
+    "dev": "moleculer-runner --repl --hot services/**/*.service.js",
+    "start": "moleculer-runner"
+  },
+  "dependencies": {
+    "moleculer": "^0.14.26",
+    "nats": "^2.7.1",
+    "ws": "^8.13.0"
+  },
+  "engines": {
+    "node": ">= 16.x.x"
+  }
+}

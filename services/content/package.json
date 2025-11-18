@@ -1,0 +1,20 @@
+{
+  "name": "content",
+  "version": "1.0.0",
+  "description": "Content microservice (quizzes, questions, teams)",
+  "scripts": {
+    "dev": "moleculer-runner --repl --hot services/**/*.service.js",
+    "start": "moleculer-runner"
+  },
+  "dependencies": {
+    "moleculer": "^0.14.26",
+    "moleculer-db-adapter-mongo": "^0.4.21",
+    "nats": "^2.7.1",
+    "uuid": "^9.0.1",
+    "yup": "^1.4.0"
+  },
+  "engines": {
+    "node": ">= 16.x.x"
+  }
+}
+

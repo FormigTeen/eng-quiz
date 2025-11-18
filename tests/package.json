@@ -1,0 +1,14 @@
+{
+  "name": "e2e-test-service",
+  "version": "1.0.0",
+  "scripts": {
+    "test": "jest",
+    "test:e2e": "jest --runInBand e2e"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "axios": "^1.7.0",
+    "dotenv": "^16.4.0"
+  }
+}
+
