@@ -5,15 +5,15 @@ module.exports = {
   name: "gateway.auth.v1",
   actions: {
     register: {
-      params: { email: { type: "email" } },
+      params: { email: { type: "email" }, password: { type: "string", min: 6 } },
       async handler(ctx) {
-        return ctx.call("auth.register", { email: ctx.params.email });
+        return ctx.call("auth.register", { email: ctx.params.email, password: ctx.params.password });
       }
     },
     login: {
-      params: { email: { type: "email" } },
+      params: { email: { type: "email" }, password: { type: "string", min: 1 } },
       async handler(ctx) {
-        return ctx.call("auth.login", { email: ctx.params.email });
+        return ctx.call("auth.login", { email: ctx.params.email, password: ctx.params.password });
       }
     },
     invite: {
@@ -22,7 +22,7 @@ module.exports = {
       async handler(ctx) {
         await ctx.emit("invite", { email: ctx.params.email });
         return true;
-      }
+}
     },
     auth: {
       params: { token: { type: "string", min: 1 } },

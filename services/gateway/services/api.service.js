@@ -16,6 +16,14 @@ module.exports = {
     routes: [
             {
                 path: "/",
+                cors: {
+                    origin: "*",
+                    methods: ["GET", "OPTIONS", "POST", "PUT", "DELETE", "PATCH"],
+                    allowedHeaders: ["Content-Type", "Authorization"],
+                    exposedHeaders: [],
+                    credentials: false,
+                    maxAge: 3600
+                },
                 whitelist: [
                     "gateway.ping.v1.trigger",
                     "gateway.auth.v1.register",

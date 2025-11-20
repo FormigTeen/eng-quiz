@@ -5,6 +5,7 @@ const MongoAdapter = require("moleculer-db-adapter-mongo");
 const jwt = require("jsonwebtoken");
 const yup = require("yup");
 const nodemailer = require("nodemailer");
+const crypto = require("crypto");
 
 module.exports = {
   name: "auth",
@@ -18,41 +19,70 @@ module.exports = {
     rest: false
   },
 
+  methods: {
+    getPasswordSeed() {
+      const seed = process.env.PASSWORD_SEED || process.env.AUTH_PASSWORD_SEED;
+      if (!seed) {
+        throw new Error("PASSWORD_SEED not configured in environment");
+      }
+      return seed;
+    },
+    hashPassword(password) {
+      const seed = this.getPasswordSeed();
+      // Using HMAC-SHA256 with a global seed (pepper)
+      return crypto.createHmac("sha256", seed).update(String(password)).digest("hex");
+    }
+  },
+
   actions: {
-    // 4 - register only receives email: string
+    // register receives email & password; stores password hash
     register: {
       async handler(ctx) {
-        const schema = yup.object({ email: yup.string().email().required() });
+        const schema = yup.object({
+          email: yup.string().email().required(),
+          password: yup.string().min(6).required()
+        });
         try {
           await schema.validate(ctx.params, { abortEarly: false, stripUnknown: true });
         } catch (e) {
           return false;
         }
         const email = String(ctx.params.email).trim().toLowerCase();
+        const password = String(ctx.params.password);
         const col = this.adapter.collection;
         const existing = await col.findOne({ email });
         if (existing) {
           return false;
         }
-        await col.insertOne({ email, role: "basic", createdAt: new Date().toISOString() });
+        const passwordHash = this.hashPassword(password);
+        await col.insertOne({ email, role: "basic", passwordHash, createdAt: new Date().toISOString() });
         return true;
       }
     },
 
-    // 7 - login receives email and returns JWT for 30 days
+    // login receives email & password and returns JWT for 30 days
     login: {
       async handler(ctx) {
-        const schema = yup.object({ email: yup.string().email().required() });
+        const schema = yup.object({
+          email: yup.string().email().required(),
+          password: yup.string().min(1).required()
+        });
         try {
           await schema.validate(ctx.params, { abortEarly: false, stripUnknown: true });
         } catch (e) {
           return false;
         }
         const email = String(ctx.params.email).trim().toLowerCase();
+        const password = String(ctx.params.password);
         const col = this.adapter.collection;
         const user = await col.findOne({ email });
         if (!user) {
           // require user to be registered
+          return false;
+        }
+        // verify password
+        const passwordHash = this.hashPassword(password);
+        if (!user.passwordHash || user.passwordHash !== passwordHash) {
           return false;
         }
 
@@ -148,12 +178,27 @@ module.exports = {
     } catch (e) {
       this.logger.warn("Could not create unique index on users.email", e?.message || e);
     }
-    // upsert admin account
+    // upsert admin account with default password
     try {
-      await this.adapter.collection.updateOne(
-        { email: "admin@admin.com" },
-        { $setOnInsert: { email: "admin@admin.com", role: "admin", createdAt: new Date().toISOString() } },
+      const adminEmail = "admin@admin.com";
+      const adminPasswordHash = this.hashPassword("admin123");
+      const col = this.adapter.collection;
+      await col.updateOne(
+        { email: adminEmail },
+        {
+          $setOnInsert: {
+            email: adminEmail,
+            role: "admin",
+            passwordHash: adminPasswordHash,
+            createdAt: new Date().toISOString()
+          }
+        },
         { upsert: true }
+      );
+      // Ensure passwordHash exists if admin already existed without it
+      await col.updateOne(
+        { email: adminEmail, passwordHash: { $exists: false } },
+        { $set: { passwordHash: adminPasswordHash } }
       );
     } catch (e) {
       this.logger.warn("Admin upsert failed", e?.message || e);
