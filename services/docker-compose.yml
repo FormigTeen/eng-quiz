@@ -15,6 +15,9 @@ services:
   gateway:
     build: ./gateway
     env_file: .env
+    environment:
+      # Ensure moleculer-runner loads service files in production
+      - SERVICES=services/**/*.service.js
     depends_on:
       - nats
     ports:
@@ -24,6 +27,9 @@ services:
   ping:
     build: ./ping
     env_file: .env
+    environment:
+      # Load all service files (production start doesn't pass a glob by default)
+      - SERVICES=services/**/*.service.js
     depends_on:
       - nats
     restart: unless-stopped
@@ -31,6 +37,8 @@ services:
   pong:
     build: ./pong
     env_file: .env
+    environment:
+      - SERVICES=services/**/*.service.js
     depends_on:
       - nats
     restart: unless-stopped
@@ -38,6 +46,8 @@ services:
   ws:
     build: ./ws
     env_file: .env
+    environment:
+      - SERVICES=services/**/*.service.js
     depends_on:
       - nats
     ports:
@@ -47,6 +57,8 @@ services:
   auth:
     build: ./auth
     env_file: .env
+    environment:
+      - SERVICES=services/**/*.service.js
     depends_on:
       - nats
       - mongodb
@@ -55,6 +67,8 @@ services:
   content:
     build: ./content
     env_file: .env
+    environment:
+      - SERVICES=services/**/*.service.js
     depends_on:
       - nats
       - mongodb
