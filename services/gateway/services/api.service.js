@@ -15,13 +15,16 @@ module.exports = {
 
     routes: [
             {
-                path: "/",
+                path: "/api",
                 whitelist: [
                     "gateway.ping.v1.trigger",
                     "gateway.auth.v1.register",
                     "gateway.auth.v1.login",
                     "gateway.auth.v1.auth",
                     "gateway.auth.v1.invite",
+                    "gateway.auth.v1.logout",
+                    "gateway.auth.v1.changePassword",
+                    "gateway.auth.v1.resetPassword",
                     "gateway.content.v1.createQuiz",
                     "gateway.content.v1.createTeam",
                     "gateway.content.v1.createQuestion",
@@ -40,6 +43,9 @@ module.exports = {
                     "POST auth/v1/login": "gateway.auth.v1.login",
                     "POST auth/v1/auth": "gateway.auth.v1.auth",
                     "POST auth/v1/invite": "gateway.auth.v1.invite",
+                    "POST auth/v1/logout": "gateway.auth.v1.logout",
+                    "POST auth/v1/change-password": "gateway.auth.v1.changePassword",
+                    "POST auth/v1/reset-password": "gateway.auth.v1.resetPassword",
                     "POST content/v1/quiz": "gateway.content.v1.createQuiz",
                     "POST content/v1/team": "gateway.content.v1.createTeam",
                     "POST content/v1/question": "gateway.content.v1.createQuestion",

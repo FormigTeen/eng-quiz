@@ -5,15 +5,27 @@ module.exports = {
   name: "gateway.auth.v1",
   actions: {
     register: {
-      params: { email: { type: "email" } },
+      params: { 
+        email: { type: "email" },
+        password: { type: "string", min: 6 }
+      },
       async handler(ctx) {
-        return ctx.call("auth.register", { email: ctx.params.email });
+        return ctx.call("auth.register", { 
+          email: ctx.params.email,
+          password: ctx.params.password
+        });
       }
     },
     login: {
-      params: { email: { type: "email" } },
+      params: { 
+        email: { type: "email" },
+        password: { type: "string", min: 1 }
+      },
       async handler(ctx) {
-        return ctx.call("auth.login", { email: ctx.params.email });
+        return ctx.call("auth.login", { 
+          email: ctx.params.email,
+          password: ctx.params.password
+        });
       }
     },
     invite: {
@@ -28,6 +40,36 @@ module.exports = {
       params: { token: { type: "string", min: 1 } },
       async handler(ctx) {
         return ctx.call("auth.auth", { token: ctx.params.token });
+      }
+    },
+    logout: {
+      auth: "required",
+      async handler(ctx) {
+        // Passar o email do usuário autenticado para o serviço auth
+        const user = ctx.meta.user;
+        if (!user || !user.email) {
+          return false;
+        }
+        return ctx.call("auth.logout", { email: user.email });
+      }
+    },
+    changePassword: {
+      auth: "required",
+      params: {
+        currentPassword: { type: "string", min: 1 },
+        newPassword: { type: "string", min: 6 }
+      },
+      async handler(ctx) {
+        return ctx.call("auth.changePassword", {
+          currentPassword: ctx.params.currentPassword,
+          newPassword: ctx.params.newPassword
+        });
+      }
+    },
+    resetPassword: {
+      params: { email: { type: "email" } },
+      async handler(ctx) {
+        return ctx.call("auth.resetPassword", { email: ctx.params.email });
       }
     }
   }
