@@ -45,12 +45,8 @@ module.exports = {
     logout: {
       auth: "required",
       async handler(ctx) {
-        // Passar o email do usuário autenticado para o serviço auth
-        const user = ctx.meta.user;
-        if (!user || !user.email) {
-          return false;
-        }
-        return ctx.call("auth.logout", { email: user.email });
+        // Não precisa passar email, o auth.logout usa ctx.meta.user
+        return ctx.call("auth.logout");
       }
     },
     changePassword: {

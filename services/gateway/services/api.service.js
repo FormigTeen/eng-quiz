@@ -87,8 +87,8 @@ module.exports = {
 
 	methods: {
 		async authenticate(ctx, route, req) {
-        const auth = req.headers["authorization"];
-        if (auth && auth.startsWith("Bearer ")) {
+            const auth = req.headers["authorization"] || req.headers["Authorization"];
+            if (auth && auth.startsWith("Bearer ")) {
             const token = auth.slice(7).trim();
             try {
                 const user = await ctx.call("auth.auth", { token });
