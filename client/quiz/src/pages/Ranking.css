@@ -1,0 +1,349 @@
+/* Ranking.css */
+
+.ranking-bg {
+  --background: #f4f6f8;
+}
+
+.section-margin {
+  margin: 20px;
+}
+
+/* 1. SEU DESEMPENHO (VERDE) */
+.performance-card {
+  background: linear-gradient(135deg, #00b050 0%, #008a3e 100%);
+  border-radius: 20px;
+  padding: 20px;
+  color: white;
+  box-shadow: 0 10px 25px rgba(0, 176, 80, 0.25);
+}
+
+.perf-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.perf-avatar {
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  width: 48px;
+  height: 48px;
+  margin-right: 12px;
+}
+
+.perf-text h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.perf-text p {
+  margin: 0;
+  font-size: 13px;
+  opacity: 0.8;
+}
+
+.badge-up {
+  background: white;
+  color: #00b050;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 4px 8px;
+  border-radius: 12px;
+  position: absolute;
+  right: 0;
+  top: 5px;
+}
+
+/* Grid de Status "Vidro" */
+.glass-stat {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 10px;
+  margin-bottom: 10px;
+  backdrop-filter: blur(5px);
+}
+
+.glass-stat span {
+  display: block;
+  font-size: 9px;
+  opacity: 0.9;
+  margin-bottom: 5px;
+}
+
+.glass-stat h4 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.glass-stat small {
+  font-size: 8px;
+  opacity: 0.7;
+}
+
+/* Gráfico Simples SVG */
+.chart-container {
+  background: white;
+  border-radius: 15px;
+  padding: 15px;
+  margin-top: 10px;
+  color: #333;
+}
+
+.chart-header {
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.chart-header ion-icon {
+  margin-right: 5px;
+  color: #00b050;
+}
+
+.chart-header small {
+  color: #999;
+  font-weight: 400;
+  margin-left: 5px;
+}
+
+.line-chart {
+  width: 100%;
+  height: 80px;
+  background: #00b050;
+  /* Fundo verde do gráfico */
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.chart-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 9px;
+  color: #999;
+  margin-top: 5px;
+  padding: 0 10px;
+}
+
+/* 2. ESTATÍSTICAS COMUNIDADE */
+.section-title {
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+}
+
+.title-icon {
+  margin-right: 10px;
+  font-size: 20px;
+  color: #666;
+}
+
+.title-icon.yellow {
+  color: #ffb300;
+}
+
+.section-title p {
+  margin: 0;
+  font-size: 11px;
+  color: #888;
+}
+
+.mt-20 {
+  margin-top: 30px;
+}
+
+.comm-card {
+  border-radius: 16px;
+  padding: 15px 20px;
+  margin-bottom: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+.comm-card p {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: #555;
+}
+
+.comm-card h3 {
+  margin: 5px 0;
+  font-size: 24px;
+  font-weight: 800;
+  color: #222;
+}
+
+.pill-green {
+  font-size: 10px;
+  color: #00b050;
+  background: #e8f5e9;
+  padding: 3px 8px;
+  border-radius: 8px;
+  font-weight: 700;
+}
+
+.pill-blue {
+  font-size: 10px;
+  color: #1976d2;
+  background: #e3f2fd;
+  padding: 3px 8px;
+  border-radius: 8px;
+  font-weight: 700;
+}
+
+.big-icon {
+  font-size: 32px;
+  opacity: 0.5;
+}
+
+.blue-theme {
+  background: #f0f7ff;
+}
+
+.purple-theme {
+  background: #fbf0ff;
+}
+
+.green-theme {
+  background: #f0fdf4;
+}
+
+/* 3. RANKING LISTA */
+.ranking-segment {
+  background: #e0e0e0;
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 20px;
+}
+
+.top-global-label {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.icon-circle {
+  background: #fff8e1;
+  color: #ffb300;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 10px;
+}
+
+.top-global-label p {
+  margin: 0;
+  font-size: 10px;
+  color: #888;
+}
+
+/* Item da Lista de Ranking */
+.rank-item {
+  background: white;
+  border-radius: 16px;
+  padding: 10px 15px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+}
+
+.rank-pos {
+  font-weight: 800;
+  font-size: 16px;
+  width: 25px;
+  text-align: center;
+  margin-right: 10px;
+  color: #444;
+}
+
+.rank-avatar {
+  width: 40px;
+  height: 40px;
+  border: 2px solid white;
+  margin-right: 10px;
+}
+
+.rank-info {
+  flex: 1;
+}
+
+.rank-info h4 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #333;
+}
+
+.rank-info p {
+  margin: 3px 0 0 0;
+  font-size: 10px;
+  color: #888;
+  display: flex;
+  align-items: center;
+}
+
+.rank-info ion-icon {
+  font-size: 10px;
+  margin-right: 2px;
+}
+
+.rank-points {
+  text-align: right;
+}
+
+.rank-points strong {
+  display: block;
+  font-size: 14px;
+  color: #333;
+}
+
+.rank-points small {
+  font-size: 9px;
+  color: #999;
+}
+
+/* Estilos Especiais para Top 3 (Podium) */
+.rank-item.gold {
+  background: linear-gradient(90deg, #ffca28, #ffb300);
+  color: white;
+}
+
+.rank-item.silver {
+  background: linear-gradient(90deg, #cfd8dc, #b0bec5);
+  color: white;
+}
+
+.rank-item.bronze {
+  background: linear-gradient(90deg, #ffab91, #ff7043);
+  color: white;
+}
+
+/* Ajustes de texto para os coloridos */
+.rank-item.gold .rank-pos,
+.rank-item.gold h4,
+.rank-item.gold strong,
+.rank-item.gold p,
+.rank-item.gold small,
+.rank-item.silver .rank-pos,
+.rank-item.silver h4,
+.rank-item.silver strong,
+.rank-item.silver p,
+.rank-item.silver small,
+.rank-item.bronze .rank-pos,
+.rank-item.bronze h4,
+.rank-item.bronze strong,
+.rank-item.bronze p,
+.rank-item.bronze small {
+  color: white !important;
+  opacity: 0.95;
+}
