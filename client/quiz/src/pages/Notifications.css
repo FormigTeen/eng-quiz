@@ -1,0 +1,394 @@
+/* Notifications.css */
+
+.notif-bg {
+  --background: #f4f6f8;
+}
+
+.section-padding {
+  padding: 20px;
+}
+
+.pt-0 {
+  padding-top: 0;
+}
+
+.pb-100 {
+  padding-bottom: 100px;
+}
+
+.mt-4 {
+  margin-top: 30px;
+}
+
+/* 1. HEADER CARD */
+.header-card {
+  background: white;
+  border-radius: 16px;
+  padding: 15px;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e0e0e0;
+}
+
+.header-icon-box {
+  background: #2979ff;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 20px;
+  margin-right: 12px;
+}
+
+.header-info h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 800;
+  color: #1a4ba0;
+}
+
+.header-info p {
+  margin: 2px 0 0 0;
+  font-size: 11px;
+  color: #2979ff;
+}
+
+.counter-box {
+  margin-left: auto;
+  display: flex;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 5px;
+}
+
+.c-item {
+  padding: 0 10px;
+  text-align: center;
+}
+
+.c-item.border-right {
+  border-right: 1px solid #eee;
+}
+
+.c-item span {
+  display: block;
+  font-size: 9px;
+  color: #1a4ba0;
+  font-weight: 600;
+}
+
+.c-item strong {
+  display: block;
+  font-size: 14px;
+  color: #333;
+}
+
+
+/* 2. FILTROS */
+.filter-label {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.filter-label ion-icon {
+  font-size: 18px;
+  color: #c2185b;
+  margin-right: 10px;
+}
+
+.filter-label strong {
+  font-size: 14px;
+  color: #333;
+  display: block;
+}
+
+.filter-label p {
+  margin: 0;
+  font-size: 10px;
+  color: #888;
+}
+
+.orange-text {
+  color: #f57c00 !important;
+}
+
+.filter-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.pill-btn {
+  border: none;
+  padding: 8px 20px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+}
+
+.pill-btn.active {
+  background: #2979ff;
+  color: white;
+  box-shadow: 0 4px 10px rgba(41, 121, 255, 0.3);
+}
+
+.unread-badge {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 700;
+  color: #d32f2f;
+  display: flex;
+  align-items: center;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  background: #d32f2f;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 5px;
+}
+
+.action-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.action-btn {
+  flex: 1;
+  border: none;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+}
+
+.action-btn.green {
+  background: #00b050;
+  color: white;
+}
+
+.action-btn.red-outline {
+  background: transparent;
+  border: 1px solid #ff5252;
+  color: #ff5252;
+}
+
+/* 3. LISTA NOTIFICAÇÕES */
+.list-title {
+  margin: 0 0 15px 0;
+  font-size: 14px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.list-title small {
+  font-weight: 400;
+  color: #888;
+  margin-left: 5px;
+  font-size: 11px;
+}
+
+.notif-card {
+  background: white;
+  border-radius: 12px;
+  margin-bottom: 15px;
+  position: relative;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  /* Para a borda verde não vazar */
+  padding: 15px;
+  min-height: 80px;
+}
+
+/* Faixa Verde lateral */
+.is-new {
+  padding-left: 25px;
+  border: 1px solid #00b050;
+}
+
+.green-stripe {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 8px;
+  background: #00b050;
+}
+
+.notif-content {
+  display: flex;
+  align-items: flex-start;
+}
+
+.n-icon-box {
+  min-width: 45px;
+  height: 45px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 22px;
+  margin-right: 15px;
+}
+
+/* Cores dos Ícones */
+.n-icon-box.blue {
+  background: linear-gradient(135deg, #2979ff, #1565c0);
+}
+
+.n-icon-box.orange {
+  background: linear-gradient(135deg, #ffa726, #f57c00);
+}
+
+.n-icon-box.green {
+  background: linear-gradient(135deg, #00e676, #00b050);
+}
+
+.n-icon-box.orange-red {
+  background: linear-gradient(135deg, #ff7043, #d84315);
+}
+
+.n-icon-box.pink {
+  background: linear-gradient(135deg, #f06292, #c2185b);
+}
+
+.n-text {
+  flex: 1;
+}
+
+.n-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.n-header h3 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 800;
+  color: #333;
+}
+
+.new-badge {
+  background: #b9f6ca;
+  color: #00c853;
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+
+.n-text p {
+  margin: 4px 0;
+  font-size: 11px;
+  color: #666;
+  line-height: 1.4;
+}
+
+.time-text {
+  font-size: 10px;
+  color: #999;
+  font-weight: 600;
+}
+
+.right-type-icon {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  font-size: 14px;
+  opacity: 0.3;
+  color: #333;
+}
+
+.is-new .right-type-icon {
+  color: #00b050;
+  opacity: 1;
+}
+
+/* 4. PREFERÊNCIAS */
+.pref-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  padding: 0 15px;
+}
+
+.pref-item {
+  display: flex;
+  align-items: center;
+  padding: 15px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.pref-item.no-border {
+  border-bottom: none;
+}
+
+.pref-icon {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 15px;
+  font-size: 18px;
+}
+
+.blue-light {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+
+.yellow-light {
+  background: #fff8e1;
+  color: #f57c00;
+}
+
+.green-light {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.purple-light {
+  background: #f3e5f5;
+  color: #7b1fa2;
+}
+
+.pref-text {
+  flex: 1;
+}
+
+.pref-text strong {
+  display: block;
+  font-size: 13px;
+  color: #333;
+  margin-bottom: 2px;
+}
+
+.pref-text p {
+  margin: 0;
+  font-size: 10px;
+  color: #888;
+}
