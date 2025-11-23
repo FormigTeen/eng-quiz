@@ -1,2 +1,33 @@
-/* For information on how to create your own theme, please refer to:
-http://ionicframework.com/docs/theming/ */
+/* src/theme/variables.css */
+
+/* Estilizando a Tab Bar Globalmente */
+ion-tab-bar {
+  --background: #ffffff;
+  /* Fundo Branco */
+  border-top: 1px solid #f0f0f0;
+  /* Uma borda bem sutil em cima */
+  height: 65px;
+  /* Um pouco mais alta para ficar moderna */
+  padding-bottom: 5px;
+  /* Espaço extra para o ícone não bater na borda */
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.03);
+  /* Sombra suave subindo */
+}
+
+ion-tab-button {
+  --color: #a0a0a0;
+  /* Cor Cinza para abas NÃO selecionadas */
+  --color-selected: #00b050;
+  /* O VERDE da sua marca para a aba selecionada */
+}
+
+/* Ajuste fino para o ícone e texto */
+ion-tab-button ion-icon {
+  font-size: 24px;
+  margin-bottom: 2px;
+}
+
+ion-tab-button ion-label {
+  font-size: 10px;
+  font-weight: 600;
+}

@@ -6,7 +6,7 @@ const yup = require("yup");
 
 module.exports = {
   name: "content",
-
+  collection: "quizzes",
   created() {
     this.adapter = new MongoAdapter(process.env.MONGO_URI || "mongodb://localhost:27017/db_content_service");
     this.adapter.init(this.broker, this);

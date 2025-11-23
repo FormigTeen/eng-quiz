@@ -1,81 +1,85 @@
-import React from 'react';
 import {
-  IonPage,
   IonContent,
-  IonHeader,
-  IonTitle,
-  IonToolbar,
-  IonInput,
+  IonPage,
   IonButton,
-  IonText
+  IonIcon,
+  IonInput,
+  IonItem,
+  IonLabel,
+  IonSegment,
+  IonSegmentButton
 } from '@ionic/react';
-import { useAtom } from 'jotai';
-import { setAuthTokenAtom } from '../state/auth';
-import { apiPost, LoginResponse } from '../api/client';
-import { useHistory } from 'react-router-dom';
-
-const centerStyle: React.CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  justifyContent: 'center',
-  height: '100%',
-  gap: '12px',
-  padding: '16px',
-  width: '100%',
-  maxWidth: '420px',
-  margin: '0 auto'
-};
+import {
+  footballOutline,
+  mailOutline,
+  lockClosedOutline,
+  eyeOutline,
+  trophyOutline
+} from 'ionicons/icons';
+import './Login.css';
 
 const Login: React.FC = () => {
-  const [, setToken] = useAtom(setAuthTokenAtom);
-  const [email, setEmail] = React.useState('');
-  const [password, setPassword] = React.useState('');
-  const [error, setError] = React.useState<string | null>(null);
-  const history = useHistory();
-
-  const onSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    try {
-      const res = await apiPost<LoginResponse>('/auth/v1/login', { email, password });
-      setToken(res.token);
-      history.replace('/tab1');
-    } catch (err) {
-      setError('Falha no login. Verifique suas credenciais.');
-    }
-  };
-
   return (
     <IonPage>
-      <IonHeader>
-        <IonToolbar>
-          <IonTitle>Login</IonTitle>
-        </IonToolbar>
-      </IonHeader>
-      <IonContent fullscreen>
-        <form onSubmit={onSubmit} style={centerStyle}>
-          <IonInput
-            type="email"
-            label="Email"
-            labelPlacement="floating"
-            value={email}
-            onIonChange={(e) => setEmail(e.detail.value || '')}
-            required
-          />
-          <IonInput
-            type="password"
-            label="Senha"
-            labelPlacement="floating"
-            value={password}
-            onIonChange={(e) => setPassword(e.detail.value || '')}
-            required
-          />
-          {error && <IonText color="danger">{error}</IonText>}
-          <IonButton type="submit" expand="block">Entrar</IonButton>
-          <IonButton fill="clear" onClick={() => history.push('/register')}>Cadastrar</IonButton>
-          <IonButton disabled={true} fill="outline">Recuperar senha</IonButton>
-        </form>
+      <IonContent fullscreen className="ion-padding custom-background">
+
+        {/* 1. Cabeçalho com Logo */}
+        <div className="header-container">
+          <div className="logo-circle">
+            <IonIcon icon={footballOutline} />
+          </div>
+          <h1 className="app-title">Soccer Quiz</h1>
+          <p className="app-subtitle">🏆 O melhor quiz de futebol do Brasil! 🏆</p>
+        </div>
+
+        {/* 2. Card Principal */}
+        <div className="login-card">
+
+          {/* Abas: Entrar vs Criar Conta */}
+          <IonSegment value="login" mode="ios" className="custom-segment">
+            <IonSegmentButton value="login">
+              <IonLabel>Entrar</IonLabel>
+            </IonSegmentButton>
+            <IonSegmentButton value="signup">
+              <IonLabel>Criar Conta</IonLabel>
+            </IonSegmentButton>
+          </IonSegment>
+
+          {/* Texto de Boas-vindas */}
+          <div className="welcome-text">
+            <h2>Bem-vindo de volta!</h2>
+            <p>Entre com suas credenciais para continuar</p>
+          </div>
+
+          {/* Formulário */}
+          <div className="form-inputs">
+
+            <label>Email</label>
+            <IonItem lines="none" className="custom-input">
+              <IonIcon slot="start" icon={mailOutline} />
+              <IonInput placeholder="seu@email.com" type="email" />
+            </IonItem>
+
+            <label>Senha</label>
+            <IonItem lines="none" className="custom-input">
+              <IonIcon slot="start" icon={lockClosedOutline} />
+              <IonInput placeholder="........" type="password" />
+              <IonIcon slot="end" icon={eyeOutline} className="eye-icon" />
+            </IonItem>
+
+            <div className="forgot-password">
+              <a href="#">🗝️ Esqueci minha senha</a>
+            </div>
+
+            {/* Botão de Ação */}
+            <IonButton expand="block" className="main-button" routerLink="/app/home">
+              <IonIcon slot="start" icon={trophyOutline} />
+              Entrar no Soccer Quiz
+            </IonButton>
+
+          </div>
+        </div>
+
       </IonContent>
     </IonPage>
   );

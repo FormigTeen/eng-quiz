@@ -1,0 +1,145 @@
+/* Home.css */
+
+/* Variáveis locais para facilitar ajuste de cor */
+:root {
+  --primary-green: #009e48;
+  --dark-text: #1a1a1a;
+}
+
+/* Fundo geral */
+.custom-background {
+  --background: #f0fdf4;
+}
+
+.header-container {
+  text-align: center;
+  margin-top: 40px;
+  margin-bottom: 30px;
+}
+
+.header-container .logo-circle {
+  background: var(--primary-green);
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  margin: 0 auto 15px auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(0, 158, 72, 0.3);
+}
+
+.header-container .logo-circle ion-icon {
+  font-size: 40px;
+  color: white;
+}
+
+.header-container .app-title {
+  font-weight: 900;
+  font-size: 28px;
+  color: #0a2e18;
+  margin: 0;
+}
+
+.header-container .app-subtitle {
+  color: var(--primary-green);
+  font-weight: 600;
+  margin-top: 5px;
+  font-size: 14px;
+}
+
+/* Card Branco */
+.login-card {
+  background: white;
+  border-radius: 25px;
+  padding: 25px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  margin-bottom: 20px;
+}
+
+/* Segment (Abas) */
+ion-segment.custom-segment {
+  background: #f4f4f5;
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 30px;
+}
+
+ion-segment-button {
+  --border-radius: 10px;
+  --color: #666;
+  --color-checked: white;
+  --indicator-color: #009e48;
+  font-weight: 600;
+  min-height: 40px;
+}
+
+.welcome-text {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.welcome-text h2 {
+  font-weight: 800;
+  color: var(--dark-text);
+  margin-bottom: 5px;
+  margin-top: 0;
+}
+
+.welcome-text p {
+  color: #888;
+  font-size: 14px;
+  margin-top: 0;
+}
+
+/* Inputs */
+.form-inputs label {
+  display: block;
+  font-weight: 700;
+  color: var(--dark-text);
+  margin-bottom: 8px;
+  margin-top: 15px;
+  font-size: 14px;
+}
+
+.custom-input {
+  --background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  --padding-start: 10px;
+  --min-height: 55px;
+  margin-bottom: 5px;
+}
+
+.custom-input ion-icon {
+  color: #999;
+  margin-right: 8px;
+}
+
+.eye-icon {
+  cursor: pointer;
+}
+
+.forgot-password {
+  text-align: center;
+  margin: 20px 0;
+}
+
+.forgot-password a {
+  text-decoration: none;
+  color: var(--primary-green);
+  font-weight: 600;
+  font-size: 13px;
+}
+
+/* Botão */
+.main-button {
+  --background: #009e48;
+  --border-radius: 12px;
+  --box-shadow: 0 4px 12px rgba(0, 158, 72, 0.3);
+  font-weight: 700;
+  margin-top: 10px;
+  height: 55px;
+  font-size: 16px;
+  text-transform: none;
+}
