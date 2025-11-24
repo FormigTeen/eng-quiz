@@ -129,7 +129,6 @@
   margin-bottom: 15px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
   overflow: hidden;
-  transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
 
 .green-card {
@@ -191,25 +190,6 @@
   float: right;
 }
 
-/* Interação e estados das cartas */
-.is-clickable { cursor: pointer; }
-.hover-scale:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
-.is-disabled { pointer-events: none; opacity: 0.65; filter: saturate(0.85) brightness(0.98); }
-
-.soon-tag {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  background: #fff8e1;
-  color: #ff9800;
-  border: 1px solid rgba(255,152,0,0.35);
-  font-size: 10px;
-  font-weight: 800;
-  padding: 4px 8px;
-  border-radius: 999px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
-}
-
 /* 4. ROLAGEM HORIZONTAL DE TIMES */
 .horizontal-scroll {
   display: flex;
@@ -235,7 +215,6 @@
   justify-content: center;
   position: relative;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-  transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
 
 .team-card .star-icon {
@@ -304,8 +283,6 @@
   color: white;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   height: 100%;
-  position: relative;
-  transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
 
 .category-card ion-icon {
