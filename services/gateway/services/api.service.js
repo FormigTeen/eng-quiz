@@ -13,7 +13,16 @@ module.exports = {
 
 		use: [],
 
-    routes: [
+		cors: {
+			origin: "*", // Em produção, especificar: ["http://localhost:5173", "https://seudominio.com"]
+			methods: ["GET", "OPTIONS", "POST", "PUT", "DELETE"],
+			allowedHeaders: ["Content-Type", "Authorization"],
+			exposedHeaders: [],
+			credentials: false,
+			maxAge: 3600
+		},
+
+		routes: [
             {
                 path: "/api",
                 whitelist: [
