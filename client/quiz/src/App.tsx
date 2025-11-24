@@ -10,96 +10,112 @@ import {
   setupIonicReact
 } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
-import {
-  homeOutline,
-  trophyOutline,
-  cartOutline,
-  notificationsOutline,
-  personOutline
-} from 'ionicons/icons';
-
-/* Imports das Páginas */
+import { ellipse, square, triangle } from 'ionicons/icons';
+import Tab1 from './pages/Tab1';
+import Tab2 from './pages/Tab2';
+import Tab3 from './pages/Tab3';
 import Login from './pages/Login';
-import Home from './pages/Home';
-import Ranking from './pages/Ranking';
-import Shop from './pages/Shop';
-import Notifications from './pages/Notifications';
-import Profile from './pages/Profile';
+import Register from './pages/Register';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useAtom } from 'jotai';
+import { isAuthenticatedAtom } from './state/auth';
 
+/* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
+
+/* Basic CSS for apps built with Ionic */
 import '@ionic/react/css/normalize.css';
 import '@ionic/react/css/structure.css';
 import '@ionic/react/css/typography.css';
+
+/* Optional CSS utils that can be commented out */
 import '@ionic/react/css/padding.css';
 import '@ionic/react/css/float-elements.css';
 import '@ionic/react/css/text-alignment.css';
 import '@ionic/react/css/text-transformation.css';
 import '@ionic/react/css/flex-utils.css';
 import '@ionic/react/css/display.css';
-// import '@ionic/react/css/palettes/dark.system.css';
+
+/**
+ * Ionic Dark Mode
+ * -----------------------------------------------------
+ * For more info, please see:
+ * https://ionicframework.com/docs/theming/dark-mode
+ */
+
+/* import '@ionic/react/css/palettes/dark.always.css'; */
+/* import '@ionic/react/css/palettes/dark.class.css'; */
+import '@ionic/react/css/palettes/dark.system.css';
+
+/* Theme variables */
 import './theme/variables.css';
 
 setupIonicReact();
 
-const TabsLayout: React.FC = () => (
+const queryClient = new QueryClient();
+
+const AuthedTabs: React.FC = () => (
   <IonTabs>
     <IonRouterOutlet>
-      <Route exact path="/app/home" component={Home} />
-      <Route exact path="/app/ranking" component={Ranking} />
-      <Route exact path="/app/shop" component={Shop} />
-      <Route exact path="/app/notifications" component={Notifications} />
-      <Route exact path="/app/profile" component={Profile} />
-
-      <Route exact path="/app">
-        <Redirect to="/app/feed" />
+      <Route exact path="/tab1">
+        <Tab1 />
+      </Route>
+      <Route exact path="/tab2">
+        <Tab2 />
+      </Route>
+      <Route path="/tab3">
+        <Tab3 />
+      </Route>
+      <Route exact path="/">
+        <Redirect to="/tab1" />
       </Route>
     </IonRouterOutlet>
-
     <IonTabBar slot="bottom">
-      <IonTabButton tab="home" href="/app/home">
-        <IonIcon icon={homeOutline} />
-        <IonLabel>Início</IonLabel>
+      <IonTabButton tab="tab1" href="/tab1">
+        <IonIcon aria-hidden="true" icon={triangle} />
+        <IonLabel>Tab 1</IonLabel>
       </IonTabButton>
-
-      <IonTabButton tab="ranking" href="/app/ranking">
-        <IonIcon icon={trophyOutline} />
-        <IonLabel>Ranking</IonLabel>
+      <IonTabButton tab="tab2" href="/tab2">
+        <IonIcon aria-hidden="true" icon={ellipse} />
+        <IonLabel>Tab 2</IonLabel>
       </IonTabButton>
-
-      <IonTabButton tab="shop" href="/app/shop">
-        <IonIcon icon={cartOutline} />
-        <IonLabel>Loja</IonLabel>
-      </IonTabButton>
-
-      <IonTabButton tab="notifications" href="/app/notifications">
-        <IonIcon icon={notificationsOutline} />
-        <IonLabel>Notificações</IonLabel>
-      </IonTabButton>
-
-      <IonTabButton tab="profile" href="/app/profile">
-        <IonIcon icon={personOutline} />
-        <IonLabel>Perfil</IonLabel>
+      <IonTabButton tab="tab3" href="/tab3">
+        <IonIcon aria-hidden="true" icon={square} />
+        <IonLabel>Tab 3</IonLabel>
       </IonTabButton>
     </IonTabBar>
   </IonTabs>
 );
 
+const AppInner: React.FC = () => {
+  const [isAuthed] = useAtom(isAuthenticatedAtom);
+
+  return (
+    <IonReactRouter>
+      {isAuthed ? (
+        <AuthedTabs />
+      ) : (
+        <IonRouterOutlet>
+          <Route exact path="/login">
+            <Login />
+          </Route>
+          <Route exact path="/register">
+            <Register />
+          </Route>
+          <Route exact path="/">
+            <Redirect to="/login" />
+          </Route>
+        </IonRouterOutlet>
+      )}
+    </IonReactRouter>
+  );
+};
+
 const App: React.FC = () => (
   <IonApp>
-    <IonReactRouter>
-      <IonRouterOutlet>
-        {/* Rota de Login */}
-        <Route exact path="/login" component={Login} />
-
-        {/* Redireciona raiz para o login */}
-        <Route exact path="/">
-          <Redirect to="/login" />
-        </Route>
-
-        {/* Rotas internas do App */}
-        <Route path="/app" component={TabsLayout} />
-      </IonRouterOutlet>
-    </IonReactRouter>
+    <QueryClientProvider client={queryClient}>
+      <AppInner />
+    </QueryClientProvider>
   </IonApp>
 );
 
