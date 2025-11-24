@@ -80,7 +80,10 @@
   font-size: 14px;
 }
 
-.muted { color: rgba(255,255,255,0.7); font-style: italic; }
+.muted {
+  color: rgba(255, 255, 255, 0.7);
+  font-style: italic;
+}
 
 /* 2. ESTATÍSTICAS */
 .stat-card {
@@ -228,4 +231,14 @@
 .achievement-card.unlocked .status {
   background: #00b050;
   color: white;
+}
+
+.logout-btn {
+  --background: #fee2e2;
+  /* Fundo vermelho bem clarinho */
+  --color: #ef4444;
+  /* Texto vermelho */
+  --box-shadow: none;
+  font-weight: 700;
+  margin-bottom: 20px;
 }

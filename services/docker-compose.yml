@@ -4,12 +4,14 @@ services:
   mongodb:
     image: mongo:6
     restart: unless-stopped
+    ports:
+      - "27017:27017"
     volumes:
       - mongo-data:/data/db
 
   nats:
     image: nats:2-alpine
-    command: ["-js"]
+    command: [ "-js" ]
     restart: unless-stopped
 
   gateway:
@@ -17,7 +19,7 @@ services:
     env_file: .env
     environment:
       # Ensure moleculer-runner loads service files in production
-      - SERVICES=services/**/*.service.js
+      - SERVICES=**/*.service.js
     depends_on:
       - nats
     ports:
@@ -58,7 +60,7 @@ services:
     build: ./auth
     env_file: .env
     environment:
-      - SERVICES=services/**/*.service.js
+      - SERVICES=**/*.service.js
     depends_on:
       - nats
       - mongodb

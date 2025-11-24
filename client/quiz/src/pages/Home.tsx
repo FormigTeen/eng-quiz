@@ -99,7 +99,7 @@ const Home: React.FC = () => {
             <p>Escolha seu modo de jogo favorito</p>
           </div>
 
-          <div className="game-card green-card is-clickable hover-scale" onClick={() => history.push('/app/home')}>
+          <div className="game-card green-card is-clickable hover-scale" onClick={() => history.push('/game/quiz')}>
             <div className="card-badge">🚀 Recomendado</div>
             <div className="card-content">
               <IonIcon icon={globeOutline} />
