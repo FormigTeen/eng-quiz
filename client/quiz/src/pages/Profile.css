@@ -80,6 +80,8 @@
   font-size: 14px;
 }
 
+.muted { color: rgba(255,255,255,0.7); font-style: italic; }
+
 /* 2. ESTATÍSTICAS */
 .stat-card {
   background: white;

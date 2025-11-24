@@ -7,7 +7,9 @@
     "start": "moleculer-runner"
   },
   "dependencies": {
+    "dayjs": "^1.11.19",
     "jsonwebtoken": "^9.0.2",
+    "lodash": "^4.17.21",
     "moleculer": "^0.14.26",
     "moleculer-db": "^0.8.20",
     "moleculer-db-adapter-mongo": "^0.4.21",

@@ -8,8 +8,14 @@ import {
   trophyOutline, giftOutline, walletOutline
 } from 'ionicons/icons';
 import './Shop.css';
+import { useAuth } from '../hooks/useAuth';
+import { useHistory } from 'react-router-dom';
+import TopRightBar from '../components/TopRightBar';
 
 const Shop: React.FC = () => {
+  const { user } = useAuth();
+  const history = useHistory();
+  const coins = user?.wallet?.credits ?? 0;
 
   // Lista de Pacotes de Moedas
   const packages = [
@@ -37,12 +43,14 @@ const Shop: React.FC = () => {
     <IonPage>
       <IonContent fullscreen className="shop-bg">
 
+        <TopRightBar coins={coins} onInvite={() => history.push('/app/invite')} sticky />
+
         {/* 1. CARD DE SALDO (LARANJA) */}
         <div className="section-padding">
           <div className="balance-card">
             <div className="money-bag">💰</div>
             <p>Seu Saldo Atual</p>
-            <h1>1250</h1>
+            <h1>{coins}</h1>
             <span>moedas disponíveis</span>
           </div>
         </div>
@@ -66,7 +74,9 @@ const Shop: React.FC = () => {
 
         <div className="section-padding">
           {packages.map((pkg) => (
-            <div key={pkg.id} className={`package-card ${pkg.bestSeller ? 'best-seller-border' : ''}`}>
+            <div key={pkg.id} className={`package-card ${pkg.bestSeller ? 'best-seller-border' : ''} is-disabled`}>
+
+              <div className="soon-tag">Em breve!</div>
 
               {pkg.bestSeller && <div className="best-seller-badge">Mais Vendido</div>}
 
@@ -92,9 +102,9 @@ const Shop: React.FC = () => {
                 <h3>{pkg.price}</h3>
               </div>
 
-              <IonButton expand="block" className="shop-btn">
+              <IonButton expand="block" className="shop-btn" disabled>
                 <IonIcon slot="start" icon={walletOutline} />
-                Comprar Agora
+                Em breve
               </IonButton>
             </div>
           ))}

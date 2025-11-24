@@ -10,8 +10,19 @@ import {
   footballOutline
 } from 'ionicons/icons';
 import './Home.css';
+import { useAuth } from '../hooks/useAuth';
+import TopRightBar from '../components/TopRightBar';
+import { useHistory } from 'react-router-dom';
 
 const Home: React.FC = () => {
+  const { user } = useAuth();
+  const history = useHistory();
+  const level = user?.level ?? 1;
+  const seqCount = user?.sequence?.count ?? 0;
+  const coins = user?.wallet?.credits ?? 0;
+  const pos = (user?.score?.positive ?? 0);
+  const neg = (user?.score?.negative ?? 0);
+  const accuracy = neg === 0 ? (pos > 0 ? 100 : 0) : Math.round((pos / (pos + neg)) * 100);
 
   // Dados falsos para os cards de Times (Mais Jogados)
   const teams = [
@@ -44,13 +55,11 @@ const Home: React.FC = () => {
               <img src="https://ionicframework.com/docs/img/demos/avatar.svg" alt="Avatar" />
             </IonAvatar>
             <div className="user-text">
-              <h3>Jogador</h3>
-              <p>🏆 Nível 5 &nbsp; 🔥 0</p>
+              <h3>{user?.email || 'Jogador'}</h3>
+              <p>🏆 Nível {level} &nbsp; 🔥 {seqCount}</p>
             </div>
           </div>
-          <div className="coin-badge">
-            🟡 1250
-          </div>
+          <TopRightBar coins={coins} onInvite={() => history.push('/app/invite')} />
         </div>
 
         {/* 2. STATUS DO JOGADOR (3 CARDS) */}
@@ -67,14 +76,14 @@ const Home: React.FC = () => {
               <IonCol size="4">
                 <div className="mini-stat-card">
                   <IonIcon icon={flameOutline} className="orange-icon" />
-                  <h4>14 dias</h4>
+                  <h4>{seqCount}</h4>
                   <p>Sequência</p>
                 </div>
               </IonCol>
               <IonCol size="4">
                 <div className="mini-stat-card">
                   <IonIcon icon={locateOutline} className="green-icon" />
-                  <h4>87%</h4>
+                  <h4>{accuracy}%</h4>
                   <p>Acertos</p>
                 </div>
               </IonCol>
@@ -90,7 +99,7 @@ const Home: React.FC = () => {
             <p>Escolha seu modo de jogo favorito</p>
           </div>
 
-          <div className="game-card green-card">
+          <div className="game-card green-card is-clickable hover-scale" onClick={() => history.push('/app/home')}>
             <div className="card-badge">🚀 Recomendado</div>
             <div className="card-content">
               <IonIcon icon={globeOutline} />
@@ -102,7 +111,8 @@ const Home: React.FC = () => {
             <div className="players-online">Jogadores ativos <strong>2.8K</strong></div>
           </div>
 
-          <div className="game-card pink-card">
+          <div className="game-card pink-card is-disabled">
+            <div className="soon-tag">Em breve!</div>
             <div className="card-badge premium">💎 Premium</div>
             <div className="card-content">
               <IonIcon icon={giftOutline} />
@@ -122,7 +132,8 @@ const Home: React.FC = () => {
 
           <div className="horizontal-scroll">
             {teams.map((team, index) => (
-              <div key={index} className={`team-card ${team.color}`}>
+              <div key={index} className={`team-card ${team.color} is-disabled`}>
+                <div className="soon-tag">Em breve!</div>
                 <div className="star-icon">★</div>
                 <IonIcon icon={team.icon} className="team-icon" />
                 <h4>{team.name}</h4>
@@ -143,7 +154,8 @@ const Home: React.FC = () => {
             <IonRow>
               {categories.map((cat, index) => (
                 <IonCol size="6" key={index}>
-                  <div className={`category-card ${cat.color}`}>
+                  <div className={`category-card ${cat.color} is-disabled`}>
+                    <div className="soon-tag">Em breve!</div>
                     <IonIcon icon={cat.icon} />
                     <h4>{cat.name}</h4>
                     <span className="pill">{cat.qs}</span>

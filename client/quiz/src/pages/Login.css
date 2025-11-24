@@ -15,6 +15,10 @@
   text-align: center;
   margin-top: 40px;
   margin-bottom: 30px;
+  /* Limita largura para tablets e centraliza */
+  max-width: 420px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .header-container .logo-circle {
@@ -55,6 +59,29 @@
   padding: 25px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
   margin-bottom: 20px;
+  /* Limita largura para tablets e centraliza */
+  max-width: 420px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Garante inputs e botões acompanhando a largura máxima */
+.form-inputs,
+.main-button,
+.custom-input,
+.welcome-text,
+ion-segment.custom-segment {
+  max-width: 420px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Ajuste leve para telas muito largas */
+@media (min-width: 992px) {
+  .header-container,
+  .login-card {
+    max-width: 480px; /* um pouco mais confortável em desktop */
+  }
 }
 
 /* Segment (Abas) */

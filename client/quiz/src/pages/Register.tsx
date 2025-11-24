@@ -9,8 +9,8 @@ import {
   IonButton,
   IonText
 } from '@ionic/react';
-import { apiPost } from '../api/client';
 import { useHistory } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 
 const centerStyle: React.CSSProperties = {
   display: 'flex',
@@ -28,24 +28,19 @@ const centerStyle: React.CSSProperties = {
 const Register: React.FC = () => {
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
-  const [error, setError] = React.useState<string | null>(null);
   const [ok, setOk] = React.useState<boolean>(false);
+  const { sendRegister, isRegistering, registerError } = useAuth();
   const history = useHistory();
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
     setOk(false);
     try {
-      const res = await apiPost<boolean>('/auth/v1/register', { email, password });
-      if (res === true) {
-        setOk(true);
-        setTimeout(() => history.replace('/login'), 800);
-      } else {
-        setError('Email já cadastrado.');
-      }
+      await sendRegister({ email, password });
+      setOk(true);
+      setTimeout(() => history.replace('/login'), 800);
     } catch (err) {
-      setError('Falha no cadastro.');
+      // handled below via helper text
     }
   };
 
@@ -74,9 +69,13 @@ const Register: React.FC = () => {
             onIonChange={(e) => setPassword(e.detail.value || '')}
             required
           />
-          {error && <IonText color="danger">{error}</IonText>}
+          {registerError && (
+            <IonText color="danger">{(registerError as Error).message || 'Falha no cadastro'}</IonText>
+          )}
           {ok && <IonText color="success">Cadastro realizado!</IonText>}
-          <IonButton type="submit" expand="block">Cadastrar</IonButton>
+          <IonButton type="submit" expand="block" disabled={isRegistering}>
+            {isRegistering ? 'Cadastrando...' : 'Cadastrar'}
+          </IonButton>
           <IonButton fill="clear" onClick={() => history.goBack()}>Voltar</IonButton>
         </form>
       </IonContent>

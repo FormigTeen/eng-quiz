@@ -6,6 +6,8 @@ const jwt = require("jsonwebtoken");
 const yup = require("yup");
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
+const dayjs = require("dayjs");
+const { defaultsDeep } = require("lodash");
 
 module.exports = {
   name: "auth",
@@ -55,7 +57,20 @@ module.exports = {
           return false;
         }
         const passwordHash = this.hashPassword(password);
-        await col.insertOne({ email, role: "basic", passwordHash, createdAt: new Date().toISOString() });
+        await col.insertOne({
+          email,
+          role: "basic",
+          level: 1,
+          xp: 0,
+          sequence: { updated_at: null, count: 0 },
+          score: { positive: 0, negative: 0 },
+          wallet: { count: 0, credits: 0 },
+          badges: [
+            { iconUrl: null, title: 'Jogador Titular', description: 'Cadastro e Entrar no Jogo' }
+          ],
+          passwordHash,
+          createdAt: new Date().toISOString()
+        });
         return true;
       }
     },
@@ -89,6 +104,39 @@ module.exports = {
         const secret = this.settings.jwtSecret || process.env.JWT_SECRET;
         if (!secret) {
           throw new Error("JWT secret not configured");
+        }
+
+        // Update login sequence based solely on sequence.updated_at
+        const now = dayjs();
+        const nowISO = now.toISOString();
+        const seq = (user && user.sequence) || {};
+        const seqUpdatedAt = seq.updated_at ? dayjs(seq.updated_at) : null;
+        const setUpdate = {};
+        const incUpdate = {};
+
+        if (!seqUpdatedAt) {
+          setUpdate["sequence.updated_at"] = nowISO;
+          incUpdate["sequence.count"] = 1;
+        } else if (seqUpdatedAt.isSame(now.subtract(1, 'day'), 'day')) {
+          setUpdate["sequence.updated_at"] = nowISO;
+          incUpdate["sequence.count"] = 1;
+        } else if (seqUpdatedAt.isSame(now.add(1, 'day'), 'day')) {
+          // stored future by +1 day: reset streak to 1 and normalize date to now
+          setUpdate["sequence.updated_at"] = nowISO;
+          setUpdate["sequence.count"] = 1;
+        } else if (seqUpdatedAt.isSame(now, 'day')) {
+          // same day: do nothing
+        } else {
+          // any gap > 1 day (past or future beyond +1): reset to 1
+          setUpdate["sequence.updated_at"] = nowISO;
+          setUpdate["sequence.count"] = 1;
+        }
+
+        const updateOps = Object.keys(setUpdate).length || Object.keys(incUpdate).length
+          ? { $set: setUpdate, ...(Object.keys(incUpdate).length ? { $inc: incUpdate } : {}) }
+          : null;
+        if (updateOps) {
+          await this.adapter.collection.updateOne({ _id: user._id }, updateOps);
         }
 
         const token = jwt.sign({ email }, secret, { expiresIn: "30d" });
@@ -125,7 +173,20 @@ module.exports = {
         if (!email) return false;
 
         const user = await this.adapter.collection.findOne({ email: String(email).toLowerCase() });
-        return user || false;
+        if (!user) return false;
+
+        const defaultUser = {
+          role: "basic",
+          level: 1,
+          xp: 0,
+          sequence: { updated_at: null, count: 0 },
+          score: { positive: 0, negative: 0 },
+          wallet: { count: 0, credits: 0 },
+          badges: [],
+          createdAt: new Date().toISOString()
+        };
+        // Ensure defaults for missing properties only
+        return defaultsDeep({}, user, defaultUser);
       }
     }
   },
