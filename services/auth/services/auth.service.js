@@ -5,7 +5,9 @@ const MongoAdapter = require("moleculer-db-adapter-mongo");
 const jwt = require("jsonwebtoken");
 const yup = require("yup");
 const nodemailer = require("nodemailer");
-const bcrypt = require("bcrypt");
+const crypto = require("crypto");
+const dayjs = require("dayjs");
+const { defaultsDeep } = require("lodash");
 
 module.exports = {
   name: "auth",
@@ -19,11 +21,26 @@ module.exports = {
     rest: false
   },
 
+  methods: {
+    getPasswordSeed() {
+      const seed = process.env.PASSWORD_SEED || process.env.AUTH_PASSWORD_SEED;
+      if (!seed) {
+        throw new Error("PASSWORD_SEED not configured in environment");
+      }
+      return seed;
+    },
+    hashPassword(password) {
+      const seed = this.getPasswordSeed();
+      // Using HMAC-SHA256 with a global seed (pepper)
+      return crypto.createHmac("sha256", seed).update(String(password)).digest("hex");
+    }
+  },
+
   actions: {
-    // 4 - register only receives email: string and password: string
+    // register receives email & password; stores password hash
     register: {
       async handler(ctx) {
-        const schema = yup.object({ 
+        const schema = yup.object({
           email: yup.string().email().required(),
           password: yup.string().min(6).required()
         });
@@ -39,23 +56,29 @@ module.exports = {
         if (existing) {
           return false;
         }
-        // Hash da senha antes de armazenar
-        const saltRounds = 10;
-        const passwordHash = await bcrypt.hash(password, saltRounds);
-        await col.insertOne({ 
-          email, 
-          password: passwordHash,
-          role: "basic", 
-          createdAt: new Date().toISOString() 
+        const passwordHash = this.hashPassword(password);
+        await col.insertOne({
+          email,
+          role: "basic",
+          level: 1,
+          xp: 0,
+          sequence: { updated_at: null, count: 0 },
+          score: { positive: 0, negative: 0 },
+          wallet: { count: 0, credits: 0 },
+          badges: [
+            { iconUrl: null, title: 'Jogador Titular', description: 'Cadastro e Entrar no Jogo' }
+          ],
+          passwordHash,
+          createdAt: new Date().toISOString()
         });
         return true;
       }
     },
 
-    // 7 - login receives email: string and password: string and returns JWT for 30 days
+    // login receives email & password and returns JWT for 30 days
     login: {
       async handler(ctx) {
-        const schema = yup.object({ 
+        const schema = yup.object({
           email: yup.string().email().required(),
           password: yup.string().min(1).required()
         });
@@ -72,22 +95,48 @@ module.exports = {
           // require user to be registered
           return false;
         }
-
-        // Validar senha - obrigatória para todos os usuários
-        if (!user.password) {
-          // Usuário antigo sem senha cadastrada - não permitir login
-          // O usuário precisa redefinir a senha através de outro mecanismo
-          return false;
-        }
-        
-        const passwordMatch = await bcrypt.compare(password, user.password);
-        if (!passwordMatch) {
+        // verify password
+        const passwordHash = this.hashPassword(password);
+        if (!user.passwordHash || user.passwordHash !== passwordHash) {
           return false;
         }
 
         const secret = this.settings.jwtSecret || process.env.JWT_SECRET;
         if (!secret) {
           throw new Error("JWT secret not configured");
+        }
+
+        // Update login sequence based solely on sequence.updated_at
+        const now = dayjs();
+        const nowISO = now.toISOString();
+        const seq = (user && user.sequence) || {};
+        const seqUpdatedAt = seq.updated_at ? dayjs(seq.updated_at) : null;
+        const setUpdate = {};
+        const incUpdate = {};
+
+        if (!seqUpdatedAt) {
+          setUpdate["sequence.updated_at"] = nowISO;
+          incUpdate["sequence.count"] = 1;
+        } else if (seqUpdatedAt.isSame(now.subtract(1, 'day'), 'day')) {
+          setUpdate["sequence.updated_at"] = nowISO;
+          incUpdate["sequence.count"] = 1;
+        } else if (seqUpdatedAt.isSame(now.add(1, 'day'), 'day')) {
+          // stored future by +1 day: reset streak to 1 and normalize date to now
+          setUpdate["sequence.updated_at"] = nowISO;
+          setUpdate["sequence.count"] = 1;
+        } else if (seqUpdatedAt.isSame(now, 'day')) {
+          // same day: do nothing
+        } else {
+          // any gap > 1 day (past or future beyond +1): reset to 1
+          setUpdate["sequence.updated_at"] = nowISO;
+          setUpdate["sequence.count"] = 1;
+        }
+
+        const updateOps = Object.keys(setUpdate).length || Object.keys(incUpdate).length
+          ? { $set: setUpdate, ...(Object.keys(incUpdate).length ? { $inc: incUpdate } : {}) }
+          : null;
+        if (updateOps) {
+          await this.adapter.collection.updateOne({ _id: user._id }, updateOps);
         }
 
         const token = jwt.sign({ email }, secret, { expiresIn: "30d" });
@@ -124,154 +173,20 @@ module.exports = {
         if (!email) return false;
 
         const user = await this.adapter.collection.findOne({ email: String(email).toLowerCase() });
-        return user || false;
-      }
-    },
+        if (!user) return false;
 
-    // logout - confirma logout do usuário (JWT é stateless, mas emite evento)
-    logout: {
-      auth: "required",
-      async handler(ctx) {
-        const user = ctx.meta.user;
-        if (!user || !user.email) {
-          return false;
-        }
-        const email = String(user.email).toLowerCase();
-        
-        // Emitir evento de logout
-        const channel = `user:${email}`;
-        ctx.broadcast("user.loggedOut", { email, channel, at: new Date().toISOString() });
-        
-        return true;
-      }
-    },
-
-    // changePassword - altera senha do usuário autenticado
-    changePassword: {
-      auth: "required",
-      async handler(ctx) {
-        const schema = yup.object({
-          currentPassword: yup.string().min(1).required(),
-          newPassword: yup.string().min(6).required()
-        });
-        try {
-          await schema.validate(ctx.params, { abortEarly: false, stripUnknown: true });
-        } catch (e) {
-          return false;
-        }
-
-        const user = ctx.meta.user;
-        if (!user || !user.email) {
-          return false;
-        }
-
-        const email = String(user.email).toLowerCase();
-        const currentPassword = String(ctx.params.currentPassword);
-        const newPassword = String(ctx.params.newPassword);
-        const col = this.adapter.collection;
-
-        // Buscar usuário atualizado do banco
-        const dbUser = await col.findOne({ email });
-        if (!dbUser || !dbUser.password) {
-          return false;
-        }
-
-        // Validar senha atual
-        const passwordMatch = await bcrypt.compare(currentPassword, dbUser.password);
-        if (!passwordMatch) {
-          return false;
-        }
-
-        // Hash da nova senha
-        const saltRounds = 10;
-        const newPasswordHash = await bcrypt.hash(newPassword, saltRounds);
-
-        // Atualizar senha
-        await col.updateOne(
-          { email },
-          { $set: { password: newPasswordHash, updatedAt: new Date().toISOString() } }
-        );
-
-        return true;
-      }
-    },
-
-    // resetPassword - gera nova senha temporária e envia por email
-    resetPassword: {
-      async handler(ctx) {
-        const schema = yup.object({
-          email: yup.string().email().required()
-        });
-        try {
-          await schema.validate(ctx.params, { abortEarly: false, stripUnknown: true });
-        } catch (e) {
-          return false;
-        }
-
-        const email = String(ctx.params.email).trim().toLowerCase();
-        const col = this.adapter.collection;
-        const user = await col.findOne({ email });
-        
-        // Sempre retornar true para não expor se o email existe ou não
-        if (!user) {
-          return true;
-        }
-
-        // Gerar senha temporária (8 caracteres alfanuméricos)
-        const tempPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8).toUpperCase();
-        const tempPasswordClean = tempPassword.substring(0, 12);
-
-        // Hash da senha temporária
-        const saltRounds = 10;
-        const passwordHash = await bcrypt.hash(tempPasswordClean, saltRounds);
-
-        // Atualizar senha no banco
-        await col.updateOne(
-          { email },
-          { $set: { password: passwordHash, updatedAt: new Date().toISOString() } }
-        );
-
-        // Enviar email com nova senha
-        await this.sendPasswordResetEmail(email, tempPasswordClean);
-
-        return true;
-      }
-    }
-  },
-
-  methods: {
-    async sendPasswordResetEmail(email, newPassword) {
-      const host = process.env.SMTP_HOST;
-      const port = Number(process.env.SMTP_PORT || 587);
-      const user = process.env.SMTP_LOGIN;
-      const pass = process.env.SMTP_KEY;
-      const from = process.env.SMTP_FROM || user;
-
-      if (!host || !user || !pass) {
-        this.logger.warn("SMTP env not fully configured; skipping password reset email send");
-        return;
-      }
-
-      try {
-        const transporter = nodemailer.createTransport({
-          host,
-          port,
-          secure: false,
-          auth: { user, pass }
-        });
-
-        await transporter.sendMail({
-          from,
-          to: email,
-          subject: "Redefinição de Senha - ENG QUIZ",
-          text: `Sua nova senha temporária é: ${newPassword}\n\nPor favor, altere esta senha após fazer login.`,
-          html: `<p>Sua nova senha temporária é: <strong>${newPassword}</strong></p><p>Por favor, altere esta senha após fazer login.</p>`
-        });
-
-        this.logger.info(`Password reset email sent to ${email}`);
-      } catch (err) {
-        this.logger.error("Failed to send password reset email", err);
-        throw err;
+        const defaultUser = {
+          role: "basic",
+          level: 1,
+          xp: 0,
+          sequence: { updated_at: null, count: 0 },
+          score: { positive: 0, negative: 0 },
+          wallet: { count: 0, credits: 0 },
+          badges: [],
+          createdAt: new Date().toISOString()
+        };
+        // Ensure defaults for missing properties only
+        return defaultsDeep({}, user, defaultUser);
       }
     }
   },
@@ -324,33 +239,28 @@ module.exports = {
     } catch (e) {
       this.logger.warn("Could not create unique index on users.email", e?.message || e);
     }
-    // upsert admin account
+    // upsert admin account with default password
     try {
       const adminEmail = "admin@admin.com";
-      const adminPassword = process.env.ADMIN_PASSWORD || "admin123";
-      const existingAdmin = await this.adapter.collection.findOne({ email: adminEmail });
-      
-      if (!existingAdmin) {
-        // Criar admin com senha
-        const saltRounds = 10;
-        const passwordHash = await bcrypt.hash(adminPassword, saltRounds);
-        await this.adapter.collection.insertOne({
-          email: adminEmail,
-          password: passwordHash,
-          role: "admin",
-          createdAt: new Date().toISOString()
-        });
-        this.logger.info(`Admin account created with default password (change it in production!)`);
-      } else if (!existingAdmin.password) {
-        // Atualizar admin existente sem senha para incluir senha padrão
-        const saltRounds = 10;
-        const passwordHash = await bcrypt.hash(adminPassword, saltRounds);
-        await this.adapter.collection.updateOne(
-          { email: adminEmail },
-          { $set: { password: passwordHash } }
-        );
-        this.logger.info(`Admin account updated with default password (change it in production!)`);
-      }
+      const adminPasswordHash = this.hashPassword("admin123");
+      const col = this.adapter.collection;
+      await col.updateOne(
+        { email: adminEmail },
+        {
+          $setOnInsert: {
+            email: adminEmail,
+            role: "admin",
+            passwordHash: adminPasswordHash,
+            createdAt: new Date().toISOString()
+          }
+        },
+        { upsert: true }
+      );
+      // Ensure passwordHash exists if admin already existed without it
+      await col.updateOne(
+        { email: adminEmail, passwordHash: { $exists: false } },
+        { $set: { passwordHash: adminPasswordHash } }
+      );
     } catch (e) {
       this.logger.warn("Admin upsert failed", e?.message || e);
     }

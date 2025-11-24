@@ -1,0 +1,32 @@
+.trb-container {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.trb-sticky {
+  position: sticky;
+  top: 8px;
+  z-index: 10;
+  padding: 8px 12px;
+}
+
+.trb-coin {
+  background: rgba(0, 0, 0, 0.2);
+  color: #ffd700;
+  font-weight: 800;
+  padding: 8px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+}
+
+.trb-invite {
+  --border-radius: 14px;
+  --background: #00b050;
+  --background-hover: #009144;
+  --background-activated: #00843c;
+  --color: #ffffff;
+  text-transform: uppercase;
+  font-weight: 800;
+}
