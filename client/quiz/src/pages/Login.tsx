@@ -1,21 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
-  IonContent,
-  IonPage,
-  IonButton,
-  IonIcon,
-  IonInput,
-  IonItem,
-  IonLabel,
-  IonSegment,
-  IonSegmentButton
+  IonContent, IonPage, IonButton, IonIcon, IonInput,
+  IonItem, IonText
 } from '@ionic/react';
 import {
-  footballOutline,
-  mailOutline,
-  lockClosedOutline,
-  eyeOutline,
-  trophyOutline
+  footballOutline, mailOutline, lockClosedOutline,
+  eyeOutline, eyeOffOutline,
+  trophyOutline, arrowForwardOutline
 } from 'ionicons/icons';
 import './Login.css';
 import { useHistory } from 'react-router-dom';
@@ -23,14 +14,12 @@ import { useAuth } from '../hooks/useAuth';
 
 const Login: React.FC = () => {
   const history = useHistory();
-  const [segment, setSegment] = React.useState<'login' | 'signup'>('login');
-  const [email, setEmail] = React.useState('');
-  const [password, setPassword] = React.useState('');
-  const { sendLogin, isLoggingIn, loginError } = useAuth();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
-  React.useEffect(() => {
-    if (segment === 'signup') history.push('/register');
-  }, [segment, history]);
+  const [showPassword, setShowPassword] = useState(false);
+
+  const { sendLogin, isLoggingIn, loginError } = useAuth();
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,7 +27,6 @@ const Login: React.FC = () => {
       await sendLogin({ email, password });
       history.push('/app/home');
     } catch (err) {
-      // handled by loginError display
     }
   };
 
@@ -46,7 +34,6 @@ const Login: React.FC = () => {
     <IonPage>
       <IonContent fullscreen className="ion-padding custom-background">
 
-        {/* 1. Cabeçalho com Logo */}
         <div className="header-container">
           <div className="logo-circle">
             <IonIcon icon={footballOutline} />
@@ -55,26 +42,12 @@ const Login: React.FC = () => {
           <p className="app-subtitle">🏆 O melhor quiz de futebol do Brasil! 🏆</p>
         </div>
 
-        {/* 2. Card Principal */}
         <div className="login-card">
-
-          {/* Abas: Entrar vs Criar Conta */}
-          <IonSegment value={segment} onIonChange={(e) => setSegment(e.detail.value as 'login' | 'signup')} mode="ios" className="custom-segment">
-            <IonSegmentButton value="login">
-              <IonLabel>Entrar</IonLabel>
-            </IonSegmentButton>
-            <IonSegmentButton value="signup">
-              <IonLabel>Criar Conta</IonLabel>
-            </IonSegmentButton>
-          </IonSegment>
-
-          {/* Texto de Boas-vindas */}
-          <div className="welcome-text">
+          <div className="welcome-text" style={{ marginTop: '10px' }}>
             <h2>Bem-vindo de volta!</h2>
             <p>Entre com suas credenciais para continuar</p>
           </div>
 
-          {/* Formulário */}
           <form className="form-inputs" onSubmit={onSubmit}>
 
             <label>Email</label>
@@ -84,7 +57,7 @@ const Login: React.FC = () => {
                 placeholder="seu@email.com"
                 type="email"
                 value={email}
-                onIonChange={(e) => setEmail(e.detail.value || '')}
+                onIonChange={e => setEmail(e.detail.value!)}
                 required
               />
             </IonItem>
@@ -93,13 +66,19 @@ const Login: React.FC = () => {
             <IonItem lines="none" className="custom-input">
               <IonIcon slot="start" icon={lockClosedOutline} />
               <IonInput
+                type={showPassword ? "text" : "password"}
                 placeholder="........"
-                type="password"
                 value={password}
-                onIonChange={(e) => setPassword(e.detail.value || '')}
+                onIonChange={e => setPassword(e.detail.value!)}
                 required
               />
-              <IonIcon slot="end" icon={eyeOutline} className="eye-icon" />
+              <IonIcon
+                slot="end"
+                icon={showPassword ? eyeOffOutline : eyeOutline}
+                className="eye-icon"
+                onClick={() => setShowPassword(!showPassword)}
+                style={{ cursor: 'pointer' }}
+              />
             </IonItem>
 
             {loginError && (
@@ -114,11 +93,23 @@ const Login: React.FC = () => {
               <a href="#">🗝️ Esqueci minha senha</a>
             </div>
 
-            {/* Botão de Ação */}
             <IonButton type="submit" expand="block" className="main-button" disabled={isLoggingIn}>
               <IonIcon slot="start" icon={trophyOutline} />
-              {isLoggingIn ? 'Entrando...' : 'Entrar no Soccer Quiz'}
+              {isLoggingIn ? 'Entrando...' : 'Entrar'}
             </IonButton>
+
+            <div className="footer-action">
+              <IonText color="medium">
+                <p>Não tem uma conta?</p>
+              </IonText>
+              <IonButton
+                fill="clear"
+                className="secondary-link"
+                onClick={() => history.push('/register')}
+              >
+                Criar Conta Grátis <IonIcon slot="end" icon={arrowForwardOutline} />
+              </IonButton>
+            </div>
 
           </form>
         </div>
