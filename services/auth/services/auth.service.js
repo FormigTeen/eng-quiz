@@ -288,6 +288,128 @@ module.exports = {
         // Ensure defaults for missing properties only
         return defaultsDeep({}, user, defaultUser);
       }
+    },
+
+    // changePassword receives JWT token, old password and new password, validates and updates password
+    changePassword: {
+      async handler(ctx) {
+
+        const schema = yup.object({
+          token: yup.string().min(1).required(),
+          oldPassword: yup.string().min(1).required(),
+          newPassword: yup.string().min(6).required()
+        });
+        try {
+          await schema.validate(ctx.params, { abortEarly: false, stripUnknown: true });
+        } catch (e) {
+          return { success: false, error: "Parâmetros inválidos" };
+        }
+
+        const token = ctx.params.token;
+        const oldPassword = String(ctx.params.oldPassword);
+        const newPassword = String(ctx.params.newPassword);
+
+        // Check if token is blacklisted in Redis
+        try {
+          if (this.redis) {
+            const blacklisted = await this.redis.get(`blacklist:${token}`);
+            if (blacklisted) {
+              return { success: false, error: "Token inválido" };
+            }
+          }
+        } catch (err) {
+          this.logger.warn("Redis check failed in changePassword; proceeding with JWT verify", err?.message || err);
+        }
+
+        // Verify JWT token and get user email
+        const secret = this.settings.jwtSecret || process.env.JWT_SECRET;
+        if (!secret) {
+          throw new Error("JWT secret not configured");
+        }
+        let payload;
+        try {
+          payload = jwt.verify(token, secret);
+        } catch (err) {
+          return { success: false, error: "Token inválido ou expirado" };
+        }
+        const email = payload && payload.email;
+        if (!email) {
+          return { success: false, error: "Token inválido" };
+        }
+
+        // Find user by email
+        const col = this.adapter.collection;
+        const user = await col.findOne({ email: String(email).toLowerCase() });
+        if (!user) {
+          return { success: false, error: "Usuário não encontrado" };
+        }
+
+        // Verify old password
+        const oldPasswordHash = this.hashPassword(oldPassword);
+        if (!user.passwordHash || user.passwordHash !== oldPasswordHash) {
+          return { success: false, error: "Senha antiga incorreta" };
+        }
+
+        // Check if new password is different from old password
+        const newPasswordHash = this.hashPassword(newPassword);
+        if (user.passwordHash === newPasswordHash) {
+          return { success: false, error: "A nova senha deve ser diferente da senha atual" };
+        }
+
+        // Update password
+        try {
+          await col.updateOne(
+            { _id: user._id },
+            { $set: { passwordHash: newPasswordHash } }
+          );
+          return { success: true, message: "Senha alterada com sucesso" };
+        } catch (err) {
+          this.logger.error("Failed to update password", err?.message || err);
+          return { success: false, error: "Erro ao atualizar senha" };
+        }
+      }
+    },
+
+    forgotPassword: {
+      async handler(ctx) {
+        const schema = yup.object({
+          email: yup.string().email().required()
+        });
+        try {
+          await schema.validate(ctx.params, { abortEarly: false, stripUnknown: true });
+        } catch (e) {
+          return { success: false, error: "Email inválido" };
+        }
+
+        const email = String(ctx.params.email).trim().toLowerCase();
+        const col = this.adapter.collection;
+        const user = await col.findOne({ email });
+
+        // Sempre retorna sucesso para não expor se o email existe ou não
+        if (!user) {
+          return { success: true, message: "Se o email existir, você receberá uma senha temporária" };
+        }
+
+        // Gera GUID como senha temporária
+        const tempPassword = crypto.randomUUID();
+        const tempPasswordHash = this.hashPassword(tempPassword);
+
+        // Atualiza a senha no banco
+        try {
+          await col.updateOne(
+            { _id: user._id },
+            { $set: { passwordHash: tempPasswordHash } }
+          );
+
+          // Emite evento para envio de email
+          await ctx.emit("forgotPassword", { email, tempPassword });
+
+          return { success: true, message: "Senha temporária enviada por email" };
+        } catch (err) {
+          this.logger.error("Failed to reset password", err?.message || err);
+          return { success: false, error: "Erro ao processar solicitação" };
+        }
+      }
     }
   },
 
@@ -343,6 +465,64 @@ module.exports = {
         );
       } catch (e) {
         this.logger.warn("Failed to apply engine.score.pick to user", e?.message || e);
+      }
+    },
+
+    async "forgotPassword"(ctx) {
+      const email = String(ctx.params?.email || "").trim().toLowerCase();
+      const tempPassword = String(ctx.params?.tempPassword || "");
+      
+      if (!email || !tempPassword) {
+        this.logger.warn("ForgotPassword event received without valid email or tempPassword");
+        return;
+      }
+
+      const host = process.env.SMTP_HOST;
+      const port = Number(process.env.SMTP_PORT || 587);
+      const user = process.env.SMTP_LOGIN;
+      const pass = process.env.SMTP_KEY;
+      const from = process.env.SMTP_FROM || user;
+
+      if (!host || !user || !pass) {
+        this.logger.warn("SMTP env not fully configured; skipping email send");
+        return;
+      }
+
+      try {
+        const transporter = nodemailer.createTransport({
+          host,
+          port,
+          secure: false,
+          auth: { user, pass }
+        });
+
+        const emailText = `Olá,\n\nVocê solicitou a recuperação de senha no Soccer Quiz.\n\nSua senha temporária é: ${tempPassword}\n\nPor favor, faça login com esta senha e altere-a para uma senha segura.\n\nAtenciosamente,\nEquipe Soccer Quiz`;
+
+        const emailHtml = `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #333;">Recuperação de Senha - Soccer Quiz</h2>
+            <p>Olá,</p>
+            <p>Você solicitou a recuperação de senha no Soccer Quiz.</p>
+            <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
+              <p style="margin: 0; font-size: 18px; font-weight: bold; color: #333;">Sua senha temporária é:</p>
+              <p style="margin: 10px 0 0 0; font-size: 24px; font-family: monospace; color: #e53935;">${tempPassword}</p>
+            </div>
+            <p>Por favor, faça login com esta senha e altere-a para uma senha segura.</p>
+            <p>Atenciosamente,<br>Equipe Soccer Quiz</p>
+          </div>
+        `;
+
+        await transporter.sendMail({
+          from,
+          to: email,
+          subject: "Recuperação de Senha - Soccer Quiz",
+          text: emailText,
+          html: emailHtml
+        });
+
+        this.logger.info(`ForgotPassword email sent to ${email}`);
+      } catch (err) {
+        this.logger.error("Failed to send forgotPassword email", err);
       }
     }
   },

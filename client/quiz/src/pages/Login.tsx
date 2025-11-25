@@ -11,6 +11,7 @@ import {
 import './Login.css';
 import { useHistory } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { apiPost } from '../api/client';
 
 const Login: React.FC = () => {
   const history = useHistory();
@@ -18,6 +19,8 @@ const Login: React.FC = () => {
   const [password, setPassword] = useState('');
 
   const [showPassword, setShowPassword] = useState(false);
+  const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false);
+  const [forgotPasswordMessage, setForgotPasswordMessage] = useState<string | null>(null);
 
   const { sendLogin, isLoggingIn, loginError } = useAuth();
 
@@ -27,6 +30,35 @@ const Login: React.FC = () => {
       await sendLogin({ email, password });
       history.push('/app/home');
     } catch (err) {
+    }
+  };
+
+  const handleForgotPassword = async (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    
+    if (!email) {
+      setForgotPasswordMessage('Por favor, informe seu email primeiro');
+      return;
+    }
+
+    setForgotPasswordLoading(true);
+    setForgotPasswordMessage(null);
+
+    try {
+      const result = await apiPost<{ success: boolean; message?: string; error?: string }>(
+        '/auth/v1/forgot-password',
+        { email }
+      );
+      
+      if (result.success) {
+        setForgotPasswordMessage(result.message || 'Senha temporária enviada por email!');
+      } else {
+        setForgotPasswordMessage(result.error || 'Erro ao enviar senha temporária');
+      }
+    } catch (err: any) {
+      setForgotPasswordMessage('Erro ao processar solicitação. Tente novamente.');
+    } finally {
+      setForgotPasswordLoading(false);
     }
   };
 
@@ -89,8 +121,30 @@ const Login: React.FC = () => {
               </div>
             )}
 
+            {forgotPasswordMessage && (
+              <div style={{ textAlign: 'center', marginTop: 8 }}>
+                <span style={{ 
+                  color: forgotPasswordMessage.includes('enviada') ? '#4caf50' : '#e53935', 
+                  fontWeight: 600, 
+                  fontSize: 13 
+                }}>
+                  {forgotPasswordMessage}
+                </span>
+              </div>
+            )}
+
             <div className="forgot-password">
-              <a href="#">🗝️ Esqueci minha senha</a>
+              <a 
+                href="#" 
+                onClick={handleForgotPassword}
+                style={{ 
+                  cursor: forgotPasswordLoading ? 'wait' : 'pointer',
+                  opacity: forgotPasswordLoading ? 0.6 : 1,
+                  pointerEvents: forgotPasswordLoading ? 'none' : 'auto'
+                }}
+              >
+                {forgotPasswordLoading ? '⏳ Enviando...' : '🗝️ Esqueci minha senha'}
+              </a>
             </div>
 
             <IonButton type="submit" expand="block" className="main-button" disabled={isLoggingIn}>
