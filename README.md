@@ -104,7 +104,7 @@ PASSWORD_SEED=eng-quiz-seed
 SMTP_HOST=smtp-relay.brevo.com
 SMTP_PORT=587
 SMTP_LOGIN=9bef88001@smtp-brevo.com
-SMTP_KEY=xsmtpsib-23763726b3e95c63ace769bb7a6b06e20339ad344d0c6171c0f85366a6b8a47d-gjbg7lWV3Ow549Mm
+SMTP_KEY= CONFIGURAR SERVIDOR SMTP
 SMTP_FROM=msformigteen@gmail.com
 
 # Porta do Gateway
