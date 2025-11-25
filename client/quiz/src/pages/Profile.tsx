@@ -4,19 +4,36 @@ import {
   IonGrid, IonRow, IonCol, IonProgressBar, IonLabel
 } from '@ionic/react';
 import {
-  createOutline, personCircleOutline, ribbonOutline,
-  flameOutline, timeOutline, statsChartOutline
+  createOutline, ribbonOutline,
+  flameOutline, timeOutline, statsChartOutline, logOutOutline
 } from 'ionicons/icons';
+import { useHistory } from 'react-router-dom';
+import { useSetAtom } from 'jotai';
+import { userAtom } from '../store/userStore';
 import './Profile.css';
 import { useAuth } from '../hooks/useAuth';
 
 const Profile: React.FC = () => {
   const { user } = useAuth();
+  const setUser = useSetAtom(userAtom); // Para limpar o estado
+  const history = useHistory(); // Para navegar
   const level = user?.level ?? 1;
   const coins = user?.wallet?.credits ?? 0;
   const xp = user?.xp ?? 0;
   const progress = Math.min((xp % 100) / 100, 1);
-  const badges = user?.badges || [];
+  // Função de Logout
+  const handleLogout = () => {
+    // 1. Limpa os dados do usuário na memória global
+    setUser({
+      email: 'Visitante',
+      isAuthenticated: false,
+      token: ''
+    });
+
+    // 2. Manda o usuário de volta para a tela de Login
+    history.push('/login');
+  };
+
   return (
     <IonPage>
       <IonContent fullscreen className="profile-bg">
@@ -85,33 +102,21 @@ const Profile: React.FC = () => {
         </IonGrid>
 
         {/* 3. PROGRESSO */}
-          <div className="progress-card section-margin">
-            <div className="progress-header">
-              <strong>Progresso de Nível</strong>
-              <span>{Math.round(progress * 100)}%</span>
-            </div>
-            <IonProgressBar value={progress} color="success" className="custom-progress"></IonProgressBar>
-            <p className="small-text">XP: {xp}</p>
+        <div className="progress-card section-margin">
+          <div className="progress-header">
+            <strong>Progresso de Nível</strong>
+            <span>{Math.round(progress * 100)}%</span>
           </div>
+          <IonProgressBar value={progress} color="success" className="custom-progress"></IonProgressBar>
+          <p className="small-text">XP: {xp}</p>
+        </div>
 
-        {/* 4. CONQUISTAS */}
-        <div className="section-title">Conquistas</div>
-
-        <div className="achievements-scroll">
-          {badges.map((b, i) => (
-            <div className="achievement-card unlocked" key={i}>
-              <IonIcon icon={b.iconUrl ? undefined : medalOutline} className="ach-icon" />
-              <h4>{b.title}</h4>
-              <p>{b.description || '—'}</p>
-              <div className="status">✔ Desbloqueada</div>
-            </div>
-          ))}
-          <div className="achievement-card locked">
-            <IonIcon icon={personCircleOutline} className="ach-icon" />
-            <h4>Lendário</h4>
-            <p>Alcance o nível 50</p>
-            <div className="status lock">Bloqueada</div>
-          </div>
+        {/* 4. BOTÃO DE SAIR (NOVO) */}
+        <div className="section-margin" style={{ marginTop: '30px' }}>
+          <IonButton expand="block" className="logout-btn" onClick={handleLogout}>
+            <IonIcon slot="start" icon={logOutOutline} />
+            Sair da Conta
+          </IonButton>
         </div>
 
         {/* Espaço extra para não ficar escondido pela TabBar */}

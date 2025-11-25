@@ -20,16 +20,14 @@ import {
 
 /* Imports das Páginas */
 import Login from './pages/Login';
-import Register from './pages/Register';
 import Home from './pages/Home';
 import Ranking from './pages/Ranking';
 import Shop from './pages/Shop';
 import Notifications from './pages/Notifications';
 import Profile from './pages/Profile';
-import Invite from './pages/Invite';
-import { useAtomValue } from 'jotai';
-import { authTokenAtom } from './state/auth';
+import Quiz from './pages/Quiz';
 
+/* CSS Imports padrão */
 import '@ionic/react/css/core.css';
 import '@ionic/react/css/normalize.css';
 import '@ionic/react/css/structure.css';
@@ -40,85 +38,72 @@ import '@ionic/react/css/text-alignment.css';
 import '@ionic/react/css/text-transformation.css';
 import '@ionic/react/css/flex-utils.css';
 import '@ionic/react/css/display.css';
-// import '@ionic/react/css/palettes/dark.system.css';
 import './theme/variables.css';
 
 setupIonicReact();
 
-const TabsLayout: React.FC = () => {
-  const token = useAtomValue(authTokenAtom);
-  if (!token) return <Redirect to="/login" />;
-  return (
-    <IonTabs>
-      <IonRouterOutlet>
-        <PrivateRoute exact path="/app/home" component={Home} />
-        <PrivateRoute exact path="/app/ranking" component={Ranking} />
-        <PrivateRoute exact path="/app/shop" component={Shop} />
-        <PrivateRoute exact path="/app/notifications" component={Notifications} />
-        <PrivateRoute exact path="/app/profile" component={Profile} />
-        <PrivateRoute exact path="/app/invite" component={Invite} />
+// --- CONFIGURAÇÃO DAS ABAS (TABS) ---
+const TabsLayout: React.FC = () => (
+  <IonTabs>
+    <IonRouterOutlet>
+      <Route exact path="/app/home" component={Home} />
+      <Route exact path="/app/ranking" component={Ranking} />
+      <Route exact path="/app/shop" component={Shop} />
+      <Route exact path="/app/notifications" component={Notifications} />
+      <Route exact path="/app/profile" component={Profile} />
+      <Route exact path="/app">
+        <Redirect to="/app/home" />
+      </Route>
+    </IonRouterOutlet>
 
-        <Route exact path="/app">
-          <Redirect to="/app/home" />
-        </Route>
-      </IonRouterOutlet>
+    <IonTabBar slot="bottom">
+      <IonTabButton tab="home" href="/app/home">
+        <IonIcon icon={homeOutline} />
+        <IonLabel>Início</IonLabel>
+      </IonTabButton>
 
-      <IonTabBar slot="bottom">
-        <IonTabButton tab="home" href="/app/home">
-          <IonIcon icon={homeOutline} />
-          <IonLabel>Início</IonLabel>
-        </IonTabButton>
-
-      <IonTabButton tab="ranking" href="#" disabled>
+      <IonTabButton tab="ranking" href="/app/ranking">
         <IonIcon icon={trophyOutline} />
-        <IonLabel>Em breve</IonLabel>
+        <IonLabel>Ranking</IonLabel>
       </IonTabButton>
 
-        <IonTabButton tab="shop" href="/app/shop">
-          <IonIcon icon={cartOutline} />
-          <IonLabel>Loja</IonLabel>
-        </IonTabButton>
+      <IonTabButton tab="shop" href="/app/shop">
+        <IonIcon icon={cartOutline} />
+        <IonLabel>Loja</IonLabel>
+      </IonTabButton>
 
-      <IonTabButton tab="notifications" href="#" disabled>
+      <IonTabButton tab="notifications" href="/app/notifications">
         <IonIcon icon={notificationsOutline} />
-        <IonLabel>Em breve</IonLabel>
+        <IonLabel>Notificações</IonLabel>
       </IonTabButton>
 
-        <IonTabButton tab="profile" href="/app/profile">
-          <IonIcon icon={personOutline} />
-          <IonLabel>Perfil</IonLabel>
-        </IonTabButton>
-      </IonTabBar>
-    </IonTabs>
-  );
-};
-
-type PrivateRouteProps = React.ComponentProps<typeof Route>;
-const PrivateRoute: React.FC<PrivateRouteProps> = ({ component: Component, ...rest }: any) => {
-  const token = useAtomValue(authTokenAtom);
-  return (
-    <Route
-      {...rest}
-      render={(props) => (token ? <Component {...props} /> : <Redirect to={{ pathname: '/login' }} />)}
-    />
-  );
-};
+      <IonTabButton tab="profile" href="/app/profile">
+        <IonIcon icon={personOutline} />
+        <IonLabel>Perfil</IonLabel>
+      </IonTabButton>
+    </IonTabBar>
+  </IonTabs>
+);
 
 const App: React.FC = () => (
   <IonApp>
     <IonReactRouter>
       <IonRouterOutlet>
+
         {/* Rota de Login */}
         <Route exact path="/login" component={Login} />
-        <Route exact path="/register" component={Register} />
 
-        {/* Redireciona raiz para o login */}
+        {/* Rota do Quiz */}
+        <Route exact path="/game/quiz" component={Quiz} />
+
+        {/* Redirecionamento da raiz */}
         <Route exact path="/">
           <Redirect to="/login" />
         </Route>
 
         {/* Rotas internas do App */}
         <Route path="/app" component={TabsLayout} />
+
       </IonRouterOutlet>
     </IonReactRouter>
   </IonApp>
