@@ -6,6 +6,7 @@ import { authTokenAtom, setAuthTokenAtom } from '../state/auth';
 
 export type AuthUser = {
   email: string;
+  name?: string;
   role?: string;
   createdAt?: string;
   level?: number;
@@ -26,7 +27,7 @@ export function useAuth() {
     enabled: Boolean(token),
     queryFn: async () => {
       const user = await apiPost<AuthUser>('/auth/v1/auth', { token });
-      return user && user !== false ? user : null;
+      return user || null;
     }
   });
 
@@ -34,7 +35,7 @@ export function useAuth() {
     mutationKey: ['auth', 'login'],
     mutationFn: async ({ email, password }: { email: string; password: string }) => {
       const res = await apiPost<{ token: string } | boolean>('/auth/v1/login', { email, password });
-      if (!res || res === false || typeof (res as any).token !== 'string') {
+      if (!res || typeof (res as any).token !== 'string') {
         throw new Error('Credenciais inválidas');
       }
       return res as { token: string };
