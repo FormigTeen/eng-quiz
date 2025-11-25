@@ -15,9 +15,7 @@ services:
   gateway:
     build: ./gateway
     env_file: .env
-    environment:
-      # Ensure moleculer-runner loads service files in production
-      - SERVICES=services/**/*.service.js
+    command: ["npm", "start", "--", "/app/services/*.service.js", "/app/services/**/*.service.js"]
     depends_on:
       - nats
     ports:
@@ -27,9 +25,7 @@ services:
   ping:
     build: ./ping
     env_file: .env
-    environment:
-      # Load all service files (production start doesn't pass a glob by default)
-      - SERVICES=services/**/*.service.js
+    command: ["npm", "start", "--", "/app/services/*.service.js", "/app/services/**/*.service.js"]
     depends_on:
       - nats
     restart: unless-stopped
@@ -37,8 +33,7 @@ services:
   pong:
     build: ./pong
     env_file: .env
-    environment:
-      - SERVICES=services/**/*.service.js
+    command: ["npm", "start", "--", "/app/services/*.service.js", "/app/services/**/*.service.js"]
     depends_on:
       - nats
     restart: unless-stopped
@@ -46,33 +41,30 @@ services:
   ws:
     build: ./ws
     env_file: .env
-    environment:
-      - SERVICES=services/**/*.service.js
     depends_on:
       - nats
     ports:
       - "8080:8080"
     restart: unless-stopped
+    command: ["npm", "start", "--", "/app/services/*.service.js", "/app/services/**/*.service.js"]
 
   auth:
     build: ./auth
     env_file: .env
-    environment:
-      - SERVICES=services/**/*.service.js
     depends_on:
       - nats
       - mongodb
     restart: unless-stopped
+    command: ["npm", "start", "--", "/app/services/*.service.js", "/app/services/**/*.service.js"]
 
   content:
     build: ./content
     env_file: .env
-    environment:
-      - SERVICES=services/**/*.service.js
     depends_on:
       - nats
       - mongodb
     restart: unless-stopped
+    command: ["npm", "start", "--", "/app/services/*.service.js", "/app/services/**/*.service.js"]
 
 networks:
   default:
