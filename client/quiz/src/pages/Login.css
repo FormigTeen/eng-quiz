@@ -78,9 +78,11 @@ ion-segment.custom-segment {
 
 /* Ajuste leve para telas muito largas */
 @media (min-width: 992px) {
+
   .header-container,
   .login-card {
-    max-width: 480px; /* um pouco mais confortável em desktop */
+    max-width: 480px;
+    /* um pouco mais confortável em desktop */
   }
 }
 
@@ -169,4 +171,28 @@ ion-segment-button {
   height: 55px;
   font-size: 16px;
   text-transform: none;
+}
+
+/* Adicionar ao final do Login.css */
+
+.footer-action {
+  text-align: center;
+  margin-top: 25px;
+  border-top: 1px solid #f0f0f0;
+  padding-top: 15px;
+}
+
+.footer-action p {
+  margin: 0;
+  font-size: 12px;
+}
+
+.secondary-link {
+  --color: #009e48;
+  font-weight: 700;
+  font-size: 14px;
+  margin-top: 5px;
+  text-transform: none;
+  --padding-start: 0;
+  --padding-end: 0;
 }

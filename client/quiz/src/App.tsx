@@ -20,6 +20,7 @@ import {
 
 /* Imports das Páginas */
 import Login from './pages/Login';
+import Register from './pages/Register';
 import Home from './pages/Home';
 import Ranking from './pages/Ranking';
 import Shop from './pages/Shop';
@@ -94,6 +95,8 @@ const App: React.FC = () => (
 
         {/* Rota de Login */}
         <Route exact path="/login" component={Login} />
+
+        <Route exact path="/register" component={Register} />
 
         {/* Rota do Quiz */}
         <Route exact path="/game/quiz" component={Quiz} />
