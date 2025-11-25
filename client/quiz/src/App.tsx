@@ -26,6 +26,7 @@ import Shop from './pages/Shop';
 import Notifications from './pages/Notifications';
 import Profile from './pages/Profile';
 import Quiz from './pages/Quiz';
+import Invite from './pages/Invite';
 
 /* CSS Imports padrão */
 import '@ionic/react/css/core.css';
@@ -50,6 +51,7 @@ const TabsLayout: React.FC = () => (
       <Route exact path="/app/ranking" component={Ranking} />
       <Route exact path="/app/shop" component={Shop} />
       <Route exact path="/app/notifications" component={Notifications} />
+      <Route exact path="/app/invite" component={Invite} />
       <Route exact path="/app/profile" component={Profile} />
       <Route exact path="/app">
         <Redirect to="/app/home" />

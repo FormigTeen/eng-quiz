@@ -11,24 +11,26 @@ function uniqueEmail(prefix = 'user') {
 describe('Auth via Gateway', () => {
   test('cadastro (register): cria usuário e bloqueia duplicado', async () => {
     const email = uniqueEmail('register');
+    const password = 'password123';
 
-    const r1 = await http.post('/auth/v1/register', { email });
+    const r1 = await http.post('/auth/v1/register', { email, password });
     expect(r1.status).toBe(200);
     expect(r1.data).toBe(true);
 
-    const r2 = await http.post('/auth/v1/register', { email });
+    const r2 = await http.post('/auth/v1/register', { email, password });
     expect(r2.status).toBe(200);
     expect(r2.data).toBe(false);
   });
 
   test('login (email) e validação do token (auth)', async () => {
     const email = uniqueEmail('login');
+    const password = 'password123';
 
-    const reg = await http.post('/auth/v1/register', { email });
+    const reg = await http.post('/auth/v1/register', { email, password });
     expect(reg.status).toBe(200);
     expect(reg.data).toBe(true);
 
-    const login = await http.post('/auth/v1/login', { email });
+    const login = await http.post('/auth/v1/login', { email, password });
     expect(login.status).toBe(200);
     expect(login.data && typeof login.data.token).toBe('string');
 
@@ -39,8 +41,32 @@ describe('Auth via Gateway', () => {
     expect(auth.data && auth.data.role).toBe('basic');
   });
 
+  test('logout: invalida o token por blacklist no Redis', async () => {
+    const email = uniqueEmail('logout');
+    const password = 'password123';
+
+    const reg = await http.post('/auth/v1/register', { email, password });
+    expect(reg.status).toBe(200);
+    expect(reg.data).toBe(true);
+
+    const login = await http.post('/auth/v1/login', { email, password });
+    expect(login.status).toBe(200);
+    expect(login.data && typeof login.data.token).toBe('string');
+
+    const token = login.data.token;
+
+    const logout = await http.post('/auth/v1/logout', { token });
+    expect(logout.status).toBe(200);
+    expect(logout.data).toBe(true);
+
+    // Após logout, a autenticação deve falhar (token na blacklist)
+    const auth = await http.post('/auth/v1/auth', { token });
+    expect(auth.status).toBe(200);
+    expect(auth.data).toBe(false);
+  });
+
   test('login com usuário admin', async () => {
-    const login = await http.post('/auth/v1/login', { email: 'admin@admin.com' });
+    const login = await http.post('/auth/v1/login', { email: 'admin@admin.com', password: 'admin123' });
     expect(login.status).toBe(200);
     expect(login.data && typeof login.data.token).toBe('string');
 
@@ -53,7 +79,7 @@ describe('Auth via Gateway', () => {
 
   test('invite: solicita envio de convite autenticado', async () => {
     // autentica como admin
-    const login = await http.post('/auth/v1/login', { email: 'admin@admin.com' });
+    const login = await http.post('/auth/v1/login', { email: 'admin@admin.com', password: 'admin123' });
     expect(login.status).toBe(200);
     const token = login.data.token;
 

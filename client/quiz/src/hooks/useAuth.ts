@@ -60,14 +60,29 @@ export function useAuth() {
     queryClient.removeQueries({ queryKey: ['auth'] });
   }, [queryClient, setToken]);
 
+  const logoutMutation = useMutation({
+    mutationKey: ['auth', 'logout'],
+    mutationFn: async () => {
+      if (!token) return true; // já está deslogado
+      const ok = await apiPost<boolean>('/auth/v1/logout', { token });
+      return ok === true;
+    },
+    onSettled: () => {
+      // Sempre limpar o estado local independente do resultado
+      signOut();
+    }
+  });
+
   return {
     token,
     user: authQuery.data || null,
     authQuery,
     sendLogin: loginMutation.mutateAsync,
     sendRegister: registerMutation.mutateAsync,
+    sendLogout: logoutMutation.mutateAsync,
     isLoggingIn: loginMutation.isPending,
     isRegistering: registerMutation.isPending,
+    isLoggingOut: logoutMutation.isPending,
     loginError: loginMutation.error as Error | null,
     registerError: registerMutation.error as Error | null,
     signOut

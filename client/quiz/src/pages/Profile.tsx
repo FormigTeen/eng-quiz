@@ -14,7 +14,7 @@ import './Profile.css';
 import { useAuth } from '../hooks/useAuth';
 
 const Profile: React.FC = () => {
-  const { user } = useAuth();
+  const { user, sendLogout, isLoggingOut } = useAuth();
   const setUser = useSetAtom(userAtom); // Para limpar o estado
   const history = useHistory(); // Para navegar
   const level = user?.level ?? 1;
@@ -22,16 +22,14 @@ const Profile: React.FC = () => {
   const xp = user?.xp ?? 0;
   const progress = Math.min((xp % 100) / 100, 1);
   // Função de Logout
-  const handleLogout = () => {
-    // 1. Limpa os dados do usuário na memória global
-    setUser({
-      email: 'Visitante',
-      isAuthenticated: false,
-      token: ''
-    });
-
-    // 2. Manda o usuário de volta para a tela de Login
-    history.push('/login');
+  const handleLogout = async () => {
+    try {
+      await sendLogout();
+    } finally {
+      // Garante limpeza da store local (compat com estado legado)
+      setUser({ email: 'Visitante', isAuthenticated: false, token: '' });
+      history.push('/login');
+    }
   };
 
   return (
@@ -113,9 +111,9 @@ const Profile: React.FC = () => {
 
         {/* 4. BOTÃO DE SAIR (NOVO) */}
         <div className="section-margin" style={{ marginTop: '30px' }}>
-          <IonButton expand="block" className="logout-btn" onClick={handleLogout}>
+          <IonButton expand="block" className="logout-btn" onClick={handleLogout} disabled={isLoggingOut}>
             <IonIcon slot="start" icon={logOutOutline} />
-            Sair da Conta
+            {isLoggingOut ? 'Saindo...' : 'Sair da Conta'}
           </IonButton>
         </div>
 

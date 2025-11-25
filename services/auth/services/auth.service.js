@@ -3,6 +3,7 @@
 const DbService = require("moleculer-db");
 const MongoAdapter = require("moleculer-db-adapter-mongo");
 const jwt = require("jsonwebtoken");
+const IORedis = require("ioredis");
 const yup = require("yup");
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
@@ -37,6 +38,32 @@ module.exports = {
   },
 
   actions: {
+    // logout receives a JWT token and blacklists it for 7 days
+    logout: {
+      async handler(ctx) {
+        const schema = yup.object({ token: yup.string().min(1).required() });
+        try {
+          await schema.validate(ctx.params, { abortEarly: false, stripUnknown: true });
+        } catch (e) {
+          return false;
+        }
+        const token = ctx.params.token;
+        if (!this.redis) {
+          // If Redis is not available, report failure to ensure logout effect is enforced only with Redis
+          this.logger.warn("Redis client not initialized; cannot blacklist token");
+          return false;
+        }
+        const key = `blacklist:${token}`;
+        const ttlSeconds = 7 * 24 * 60 * 60; // 7 days
+        try {
+          await this.redis.set(key, "1", "EX", ttlSeconds);
+          return true;
+        } catch (err) {
+          this.logger.error("Failed to set blacklist token in Redis", err?.message || err);
+          return false;
+        }
+      }
+    },
     // register receives email & password; stores password hash
     register: {
       async handler(ctx) {
@@ -159,6 +186,18 @@ module.exports = {
           return false;
         }
         const token = ctx.params.token;
+
+        // Check if token is blacklisted in Redis
+        try {
+          if (this.redis) {
+            const blacklisted = await this.redis.get(`blacklist:${token}`);
+            if (blacklisted) {
+              return false;
+            }
+          }
+        } catch (err) {
+          this.logger.warn("Redis check failed in auth; proceeding with JWT verify", err?.message || err);
+        }
         const secret = this.settings.jwtSecret || process.env.JWT_SECRET;
         if (!secret) {
           throw new Error("JWT secret not configured");
@@ -233,6 +272,22 @@ module.exports = {
   },
 
   async started() {
+    // Init Redis client
+    try {
+      const url = process.env.REDIS_URL;
+      const host = process.env.REDIS_HOST;
+      if (url) {
+        this.redis = new IORedis(url);
+      } else if (host) {
+        this.redis = new IORedis({ host, port: 6379 });
+      } else {
+        this.redis = null;
+        this.logger.warn("No REDIS_URL or REDIS_HOST set; token blacklist disabled");
+      }
+    } catch (e) {
+      this.redis = null;
+      this.logger.error("Failed to initialize Redis client", e?.message || e);
+    }
     // ensure index on email
     try {
       await this.adapter.collection.createIndex({ email: 1 }, { unique: true });
