@@ -25,11 +25,24 @@ class NodemailerProvider extends EmailProvider {
         throw new Error("SMTP env not fully configured");
       }
 
+      // Normalize hostname: brevo.com -> sendinblue.com (certificado SSL válido apenas para sendinblue.com)
+      let normalizedHost = host;
+      const hostnameChanged = host.includes('brevo.com');
+      if (hostnameChanged) {
+        normalizedHost = host.replace('brevo.com', 'sendinblue.com');
+      }
+
       this.transporter = nodemailer.createTransport({
-        host,
+        host: normalizedHost,
         port: port || 587,
         secure: false,
-        auth: { user, pass }
+        auth: { user, pass },
+        // Ignorar verificação de hostname apenas quando o hostname foi normalizado
+        // para resolver problema de certificado SSL (brevo.com -> sendinblue.com)
+        tls: hostnameChanged ? {
+          rejectUnauthorized: true,
+          checkServerIdentity: () => undefined
+        } : undefined
       });
     }
     return this.transporter;

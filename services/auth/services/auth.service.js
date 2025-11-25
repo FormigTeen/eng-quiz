@@ -5,7 +5,7 @@ const MongoAdapter = require("moleculer-db-adapter-mongo");
 const jwt = require("jsonwebtoken");
 const IORedis = require("ioredis");
 const yup = require("yup");
-const nodemailer = require("nodemailer");
+const NodemailerProvider = require("./email.providers/nodemailer.provider");
 const crypto = require("crypto");
 const dayjs = require("dayjs");
 const { defaultsDeep } = require("lodash");
@@ -35,19 +35,24 @@ module.exports = {
       // Using HMAC-SHA256 with a global seed (pepper)
       return crypto.createHmac("sha256", seed).update(String(password)).digest("hex");
     },
-    async sendInviteEmail(toEmail) {
-      const host = process.env.SMTP_HOST;
-      const port = Number(process.env.SMTP_PORT || 587);
-      const user = process.env.SMTP_LOGIN;
-      const pass = process.env.SMTP_KEY;
-      const from = process.env.SMTP_FROM || user;
 
-      if (!host || !user || !pass) {
-        throw new Error("SMTP env not fully configured");
+    async sendInviteEmail(toEmail, fromEmail) {
+      if (!this.emailProvider) {
+        const error = new Error("EmailProvider not initialized. Check SMTP configuration.");
+        error.code = "EMAIL_PROVIDER_NOT_INITIALIZED";
+        throw error;
       }
-
-      const transporter = nodemailer.createTransport({ host, port, secure: false, auth: { user, pass } });
-      await transporter.sendMail({ from, to: toEmail, subject: "Convite de Teste ENG QUIZ", text: "Convite de Teste ENG QUIZ" });
+      try {
+        await this.emailProvider.sendInvite(toEmail, fromEmail);
+      } catch (err) {
+        this.logger.error("Failed to send invite email", {
+          toEmail,
+          fromEmail,
+          error: err?.message || err,
+          stack: err?.stack
+        });
+        throw err;
+      }
     }
   },
 
@@ -83,7 +88,7 @@ module.exports = {
           }
 
           // Send email
-          await this.sendInviteEmail(toEmail);
+          await this.sendInviteEmail(toEmail, fromEmail);
 
           // Set lock for 1 day
           if (this.redis) {
@@ -421,36 +426,18 @@ module.exports = {
         return;
       }
 
-      const host = process.env.SMTP_HOST;
-      const port = Number(process.env.SMTP_PORT || 587);
-      const user = process.env.SMTP_LOGIN;
-      const pass = process.env.SMTP_KEY;
-      const from = process.env.SMTP_FROM || user;
-
-      if (!host || !user || !pass) {
-        this.logger.warn("SMTP env not fully configured; skipping email send");
+      if (!this.emailProvider) {
+        this.logger.warn("EmailProvider not initialized; skipping email send");
         return;
       }
 
       try {
-        const transporter = nodemailer.createTransport({
-          host,
-          port,
-          secure: false,
-          auth: { user, pass }
-        });
-
-        await transporter.sendMail({
-          from,
-          to: email,
-          subject: "Convite de Teste ENG QUIZ",
-          text: "Convite de Teste ENG QUIZ"
-        });
-
+        const fromEmail = process.env.SMTP_FROM || process.env.SMTP_LOGIN;
+        await this.emailProvider.sendInvite(email, fromEmail);
         this.logger.info(`Invite email sent to ${email}`);
       } catch (err) {
-      this.logger.error("Failed to send invite email", err);
-    }
+        this.logger.error("Failed to send invite email", err);
+      }
     },
 
     async "engine.score.pick"(ctx) {
@@ -477,49 +464,13 @@ module.exports = {
         return;
       }
 
-      const host = process.env.SMTP_HOST;
-      const port = Number(process.env.SMTP_PORT || 587);
-      const user = process.env.SMTP_LOGIN;
-      const pass = process.env.SMTP_KEY;
-      const from = process.env.SMTP_FROM || user;
-
-      if (!host || !user || !pass) {
-        this.logger.warn("SMTP env not fully configured; skipping email send");
+      if (!this.emailProvider) {
+        this.logger.warn("EmailProvider not initialized; skipping email send");
         return;
       }
 
       try {
-        const transporter = nodemailer.createTransport({
-          host,
-          port,
-          secure: false,
-          auth: { user, pass }
-        });
-
-        const emailText = `Olá,\n\nVocê solicitou a recuperação de senha no Soccer Quiz.\n\nSua senha temporária é: ${tempPassword}\n\nPor favor, faça login com esta senha e altere-a para uma senha segura.\n\nAtenciosamente,\nEquipe Soccer Quiz`;
-
-        const emailHtml = `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2 style="color: #333;">Recuperação de Senha - Soccer Quiz</h2>
-            <p>Olá,</p>
-            <p>Você solicitou a recuperação de senha no Soccer Quiz.</p>
-            <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
-              <p style="margin: 0; font-size: 18px; font-weight: bold; color: #333;">Sua senha temporária é:</p>
-              <p style="margin: 10px 0 0 0; font-size: 24px; font-family: monospace; color: #e53935;">${tempPassword}</p>
-            </div>
-            <p>Por favor, faça login com esta senha e altere-a para uma senha segura.</p>
-            <p>Atenciosamente,<br>Equipe Soccer Quiz</p>
-          </div>
-        `;
-
-        await transporter.sendMail({
-          from,
-          to: email,
-          subject: "Recuperação de Senha - Soccer Quiz",
-          text: emailText,
-          html: emailHtml
-        });
-
+        await this.emailProvider.sendForgotPassword(email, tempPassword);
         this.logger.info(`ForgotPassword email sent to ${email}`);
       } catch (err) {
         this.logger.error("Failed to send forgotPassword email", err);
@@ -528,6 +479,25 @@ module.exports = {
   },
 
   async started() {
+    try {
+      const host = process.env.SMTP_HOST;
+      const port = Number(process.env.SMTP_PORT || 587);
+      const user = process.env.SMTP_LOGIN;
+      const pass = process.env.SMTP_KEY;
+      const from = process.env.SMTP_FROM || user;
+
+      if (host && user && pass) {
+        this.emailProvider = new NodemailerProvider({ host, port, user, pass, from });
+        this.logger.info("EmailProvider initialized successfully");
+      } else {
+        this.emailProvider = null;
+        this.logger.warn("SMTP env not fully configured; EmailProvider disabled");
+      }
+    } catch (e) {
+      this.emailProvider = null;
+      this.logger.error("Failed to initialize EmailProvider", e?.message || e);
+    }
+
     // Init Redis client
     try {
       const url = process.env.REDIS_URL;
