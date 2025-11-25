@@ -1,35 +1,58 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   IonContent, IonPage, IonAvatar, IonButton, IonIcon,
-  IonGrid, IonRow, IonCol, IonProgressBar, IonLabel
+  IonGrid, IonRow, IonCol, IonProgressBar, IonLabel, IonInput
 } from '@ionic/react';
 import {
-  createOutline, ribbonOutline,
-  flameOutline, timeOutline, statsChartOutline, logOutOutline
+  createOutline, ribbonOutline, flameOutline,
+  timeOutline, statsChartOutline, logOutOutline,
+  checkmarkOutline, closeOutline
 } from 'ionicons/icons';
 import { useHistory } from 'react-router-dom';
 import { useSetAtom } from 'jotai';
 import { userAtom } from '../store/userStore';
-import './Profile.css';
 import { useAuth } from '../hooks/useAuth';
+import './Profile.css';
 
 const Profile: React.FC = () => {
-  const { user, sendLogout, isLoggingOut } = useAuth();
-  const setUser = useSetAtom(userAtom); // Para limpar o estado
-  const history = useHistory(); // Para navegar
+  const { user } = useAuth();
+  const setUser = useSetAtom(userAtom);
+  const history = useHistory();
+
+  // --- ESTADOS PARA EDIÇÃO DE NOME ---
+  const [isEditing, setIsEditing] = useState(false);
+  const [tempName, setTempName] = useState('');
+
+  // Carrega o nome atual quando o usuário chega (ou "Jogador" se não tiver)
+  useEffect(() => {
+    setTempName(user?.name || 'Jogador');
+  }, [user]);
+
+  const handleSaveName = () => {
+    // AQUI: Futuramente você chamará a API para salvar no banco
+    console.log("Salvando nome:", tempName);
+    // user.name = tempName; // (Simulação)
+    setIsEditing(false);
+  };
+
+  const handleCancelEdit = () => {
+    setTempName(user?.name || 'Jogador');
+    setIsEditing(false);
+  };
+  // -----------------------------------
+
   const level = user?.level ?? 1;
   const coins = user?.wallet?.credits ?? 0;
   const xp = user?.xp ?? 0;
   const progress = Math.min((xp % 100) / 100, 1);
-  // Função de Logout
-  const handleLogout = async () => {
-    try {
-      await sendLogout();
-    } finally {
-      // Garante limpeza da store local (compat com estado legado)
-      setUser({ email: 'Visitante', isAuthenticated: false, token: '' });
-      history.push('/login');
-    }
+
+  const handleLogout = () => {
+    setUser({
+      email: 'Visitante',
+      isAuthenticated: false,
+      token: ''
+    });
+    history.push('/login');
   };
 
   return (
@@ -46,25 +69,46 @@ const Profile: React.FC = () => {
           </div>
 
           <div className="user-inputs">
+
+            {/* CAMPO DE NOME (EDITÁVEL) */}
             <div className="input-group">
-              <IonLabel>Nome Completo</IonLabel>
-              <div className="fake-input">
-                <span className="muted">Não Disponível</span>
-                <IonIcon icon={createOutline} />
+              <IonLabel>Nome</IonLabel> {/* Alterado de Nome Completo */}
+
+              {isEditing ? (
+                // MODO EDIÇÃO
+                <div className="fake-input editing-mode">
+                  <IonInput
+                    value={tempName}
+                    onIonChange={e => setTempName(e.detail.value!)}
+                    className="white-input"
+                  />
+                  <div className="edit-actions">
+                    <IonIcon icon={checkmarkOutline} onClick={handleSaveName} style={{ color: 'white', marginRight: 10 }} />
+                    <IonIcon icon={closeOutline} onClick={handleCancelEdit} style={{ color: 'rgba(255,255,255,0.6)' }} />
+                  </div>
+                </div>
+              ) : (
+                // MODO VISUALIZAÇÃO
+                <div className="fake-input" onClick={() => setIsEditing(true)}>
+                  <span>{tempName}</span>
+                  <IonIcon icon={createOutline} />
+                </div>
+              )}
+            </div>
+
+            {/* CAMPO DE EMAIL (LEITURA APENAS) */}
+            <div className="input-group">
+              <IonLabel>Email</IonLabel>
+              <div className="fake-input readonly">
+                <span>{user?.email || '—'}</span>
+                {/* Ícone removido daqui conforme pedido */}
               </div>
             </div>
 
-            <div className="input-group">
-              <IonLabel>Email</IonLabel>
-              <div className="fake-input">
-                <span>{user?.email || '—'}</span>
-                <IonIcon icon={createOutline} />
-              </div>
-            </div>
           </div>
         </div>
 
-        {/* 2. ESTATÍSTICAS (GRID 2x2) */}
+        {/* 2. ESTATÍSTICAS */}
         <div className="section-title">Suas Estatísticas</div>
         <IonGrid className="stats-grid section-margin">
           <IonRow>
@@ -109,15 +153,14 @@ const Profile: React.FC = () => {
           <p className="small-text">XP: {xp}</p>
         </div>
 
-        {/* 4. BOTÃO DE SAIR (NOVO) */}
+        {/* 4. BOTÃO DE SAIR */}
         <div className="section-margin" style={{ marginTop: '30px' }}>
-          <IonButton expand="block" className="logout-btn" onClick={handleLogout} disabled={isLoggingOut}>
+          <IonButton expand="block" className="logout-btn" onClick={handleLogout}>
             <IonIcon slot="start" icon={logOutOutline} />
-            {isLoggingOut ? 'Saindo...' : 'Sair da Conta'}
+            Sair da Conta
           </IonButton>
         </div>
 
-        {/* Espaço extra para não ficar escondido pela TabBar */}
         <div style={{ height: '80px' }}></div>
 
       </IonContent>

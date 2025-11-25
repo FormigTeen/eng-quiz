@@ -242,3 +242,30 @@
   font-weight: 700;
   margin-bottom: 20px;
 }
+
+.fake-input.readonly {
+  cursor: default;
+  /* Mostra que não é clicável */
+  opacity: 0.9;
+}
+
+.fake-input.editing-mode {
+  background: rgba(255, 255, 255, 0.3);
+  /* Um pouco mais destacado */
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  padding: 0 10px;
+  /* Ajuste de padding para o input caber */
+}
+
+.white-input {
+  --color: white;
+  --placeholder-color: rgba(255, 255, 255, 0.7);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.edit-actions {
+  display: flex;
+  align-items: center;
+  font-size: 20px;
+}
