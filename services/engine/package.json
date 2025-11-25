@@ -1,0 +1,23 @@
+{
+  "name": "engine",
+  "version": "1.0.0",
+  "description": "Quiz engine microservice",
+  "scripts": {
+    "dev": "moleculer-runner --repl --hot services/**/*.service.js",
+    "start": "moleculer-runner",
+    "cli": "moleculer connect NATS"
+  },
+  "dependencies": {
+    "ioredis": "^5.4.1",
+    "moleculer": "^0.14.26",
+    "nats": "^2.7.1",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "moleculer-repl": "^0.7.3"
+  },
+  "engines": {
+    "node": ">= 16.x.x"
+  }
+}
+

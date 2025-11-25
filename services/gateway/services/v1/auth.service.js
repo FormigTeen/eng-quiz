@@ -26,9 +26,9 @@ module.exports = {
       auth: "required",
       params: { email: { type: "email" } },
       async handler(ctx) {
-        await ctx.emit("invite", { email: ctx.params.email });
-        return true;
-}
+        // Forward to auth service which handles rate-limit/cache and sending
+        return ctx.call("auth.invite", { email: ctx.params.email });
+      }
     },
     auth: {
       params: { token: { type: "string", min: 1 } },

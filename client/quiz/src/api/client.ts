@@ -17,3 +17,13 @@ export async function apiPost<T>(path: string, body: any, token?: string): Promi
 
 export type LoginResponse = { token: string };
 
+export async function apiGet<T>(path: string, token?: string): Promise<T> {
+  const res = await fetch(`${API_URL}${path}`, {
+    method: 'GET',
+    headers: {
+      ...(token ? { Authorization: `Bearer ${token}` } : {})
+    }
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}

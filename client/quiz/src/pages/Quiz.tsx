@@ -11,37 +11,18 @@ import {
 } from 'ionicons/icons';
 import { useHistory } from 'react-router-dom';
 import './Quiz.css';
+import { apiGet, apiPost } from '../api/client';
+import { useAuth } from '../hooks/useAuth';
 
-// --- MOCK DE PERGUNTAS (Banco de dados futuro) ---
-const mockQuestions = [
-  {
-    id: 1,
-    question: "Qual jogador é conhecido como 'Rei do Futebol'?",
-    options: ["Maradona", "Pelé", "Messi", "Cristiano Ronaldo"],
-    correct: 1 // Índice do array (Pelé)
-  },
-  {
-    id: 2,
-    question: "Em que ano o Brasil ganhou sua primeira Copa do Mundo?",
-    options: ["1950", "1958", "1962", "1970"],
-    correct: 1 // 1958
-  },
-  {
-    id: 3,
-    question: "Qual é a duração regulamentar de uma partida de futebol?",
-    options: ["80 minutos", "90 minutos", "100 minutos", "120 minutos"],
-    correct: 1 // 90 min
-  },
-  {
-    id: 4,
-    question: "Qual time brasileiro é conhecido como 'Timão'?",
-    options: ["Palmeiras", "Santos", "Flamengo", "Corinthians"],
-    correct: 3 // Corinthians
-  }
-];
+type EngineOption = { text: string };
+type EngineQuestion = { uuid: string; text: string; options: EngineOption[] };
+type RandomQuizResponse = { uuid: string; questions: EngineQuestion[] };
+type TrackResponse = { correct: string | null };
+type PickResponse = { positive: number; negative: number };
 
 const Quiz: React.FC = () => {
   const history = useHistory();
+  const { token } = useAuth();
 
   // Estados do Jogo: 'intro' | 'countdown' | 'playing' | 'result'
   const [gameState, setGameState] = useState<'intro' | 'countdown' | 'playing' | 'result'>('intro');
@@ -52,6 +33,9 @@ const Quiz: React.FC = () => {
   const [isChecked, setIsChecked] = useState(false);
   const [score, setScore] = useState(0);
   const [correctCount, setCorrectCount] = useState(0);
+  const [quizUUID, setQuizUUID] = useState<string | null>(null);
+  const [questions, setQuestions] = useState<EngineQuestion[]>([]);
+  const [currentCorrectText, setCurrentCorrectText] = useState<string | null>(null);
 
   // Timer
   const [timeLeft, setTimeLeft] = useState(15);
@@ -60,17 +44,28 @@ const Quiz: React.FC = () => {
   // --- LÓGICA DO JOGO ---
 
   // 1. Iniciar (Vai para contagem regressiva)
-  const startQuiz = () => {
-    setGameState('countdown');
-    let count = 3;
-    const interval = setInterval(() => {
-      count--;
-      setCountdown(count);
-      if (count === 0) {
-        clearInterval(interval);
-        setGameState('playing');
+  const startQuiz = async () => {
+    try {
+      const res = await apiGet<RandomQuizResponse>('/engine/v1/quiz/random', token || undefined);
+      setQuizUUID(res.uuid);
+      setQuestions(res.questions || []);
+      if (!res.questions || res.questions.length === 0) {
+        // Não inicia se não houver perguntas
+        return;
       }
-    }, 1000);
+      setGameState('countdown');
+      let count = 3;
+      const interval = setInterval(() => {
+        count--;
+        setCountdown(count);
+        if (count === 0) {
+          clearInterval(interval);
+          setGameState('playing');
+        }
+      }, 1000);
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   // 2. Timer da Pergunta
@@ -88,25 +83,44 @@ const Quiz: React.FC = () => {
   }, [gameState, timeLeft, isChecked]);
 
   // 3. Responder
-  const handleAnswer = (optionIndex: number) => {
+  const handleAnswer = async (optionIndex: number) => {
     if (isChecked) return; // Evita clique duplo
 
     setSelectedOption(optionIndex);
     setIsChecked(true);
-
-    const isCorrect = optionIndex === mockQuestions[currentQIndex].correct;
-
-    if (isCorrect) {
-      setScore(score + 100);
-      setCorrectCount(correctCount + 1);
+    const q = questions[currentQIndex];
+    try {
+      const chosenText = optionIndex >= 0 ? (q?.options?.[optionIndex]?.text || '') : '';
+      const track = await apiPost<TrackResponse>('/engine/v1/track', {
+        quiz_uuid: quizUUID,
+        question_uuid: q?.uuid,
+        answer: chosenText
+      }, token || undefined);
+      const correctText = track?.correct || null;
+      setCurrentCorrectText(correctText);
+      if (optionIndex >= 0 && correctText && chosenText === correctText) {
+        setScore(prev => prev + 100);
+        setCorrectCount(prev => prev + 1);
+      }
+    } catch (e) {
+      console.error(e);
     }
 
     // Espera 1.5s para mostrar a cor (verde/vermelho) e passa para a próxima
-    setTimeout(() => {
-      if (currentQIndex < mockQuestions.length - 1) {
+    setTimeout(async () => {
+      if (currentQIndex < (questions.length - 1)) {
         nextQuestion();
       } else {
         setGameState('result');
+        try {
+          if (quizUUID) {
+            const res = await apiPost<PickResponse>('/engine/v1/pick', { quiz_uuid: quizUUID }, token || undefined);
+            setCorrectCount(res.positive);
+            setScore(res.positive * 100);
+          }
+        } catch (e) {
+          console.error(e);
+        }
       }
     }, 1500);
   };
@@ -116,6 +130,7 @@ const Quiz: React.FC = () => {
     setSelectedOption(null);
     setIsChecked(false);
     setTimeLeft(15);
+    setCurrentCorrectText(null);
   };
 
   const resetGame = () => {
@@ -127,6 +142,9 @@ const Quiz: React.FC = () => {
     setCountdown(3);
     setIsChecked(false);
     setSelectedOption(null);
+    setQuizUUID(null);
+    setQuestions([]);
+    setCurrentCorrectText(null);
   };
 
   // --- RENDERIZAÇÃO DAS TELAS ---
@@ -150,7 +168,7 @@ const Quiz: React.FC = () => {
           <div className="intro-card-container">
             <div className="info-row">
               <span>Total de Perguntas</span>
-              <strong>{mockQuestions.length} questões</strong>
+              <strong>{(questions && questions.length > 0) ? questions.length : 5} questões</strong>
             </div>
             <div className="info-row">
               <span>Tempo por Pergunta</span>
@@ -174,7 +192,7 @@ const Quiz: React.FC = () => {
 
           <div className="bottom-action">
             <IonButton expand="block" className="start-btn" onClick={startQuiz}>
-              Inciar Quiz
+              Iniciar Quiz
             </IonButton>
           </div>
         </IonContent>
@@ -205,8 +223,8 @@ const Quiz: React.FC = () => {
 
   // TELA 3: JOGO (PLAYING)
   if (gameState === 'playing') {
-    const currentQ = mockQuestions[currentQIndex];
-    const progress = (currentQIndex / mockQuestions.length);
+    const currentQ = questions[currentQIndex];
+    const progress = (questions.length > 0) ? (currentQIndex / questions.length) : 0;
 
     return (
       <IonPage>
@@ -214,7 +232,7 @@ const Quiz: React.FC = () => {
           <div className="game-header">
             <div className="top-bar">
               <IonIcon icon={closeOutline} onClick={() => history.goBack()} />
-              <div className="q-badge">⚡ {currentQIndex + 1}/{mockQuestions.length}</div>
+              <div className="q-badge">⚡ {currentQIndex + 1}/{questions.length || 5}</div>
               <div className={`timer-badge ${timeLeft < 5 ? 'danger' : ''}`}>
                 <IonIcon icon={timeOutline} /> {timeLeft}s
               </div>
@@ -222,22 +240,23 @@ const Quiz: React.FC = () => {
 
             {/* Barra de Progresso */}
             <div className="progress-container">
-              <small>Pergunta {currentQIndex + 1} de {mockQuestions.length}</small>
+              <small>Pergunta {currentQIndex + 1} de {questions.length || 5}</small>
               <IonProgressBar value={progress} color="dark" className="thin-progress"></IonProgressBar>
             </div>
 
             {/* Pergunta */}
             <div className="question-card">
-              <h3>{currentQ.question}</h3>
+              <h3>{currentQ?.text}</h3>
             </div>
 
             {/* Opções */}
             <div className="options-list">
-              {currentQ.options.map((opt, index) => {
+              {currentQ?.options?.map((opt, index) => {
                 let statusClass = '';
                 if (isChecked) {
-                  if (index === currentQ.correct) statusClass = 'correct'; // Sempre mostra o correto verde
-                  else if (index === selectedOption && index !== currentQ.correct) statusClass = 'wrong'; // Se errou, mostra vermelho
+                  const correctIndex = currentCorrectText && currentQ?.options ? currentQ.options.findIndex(o => o.text === currentCorrectText) : -1;
+                  if (index === correctIndex) statusClass = 'correct';
+                  else if (index === selectedOption && index !== correctIndex) statusClass = 'wrong';
                 }
 
                 return (
@@ -246,7 +265,7 @@ const Quiz: React.FC = () => {
                     className={`option-btn ${statusClass} ${selectedOption === index ? 'selected' : ''}`}
                     onClick={() => handleAnswer(index)}
                   >
-                    <span>{opt}</span>
+                    <span>{opt.text}</span>
                     {statusClass === 'correct' && <IonIcon icon={checkmarkCircleOutline} />}
                     {statusClass === 'wrong' && <IonIcon icon={closeCircleOutline} />}
                   </div>
@@ -268,7 +287,7 @@ const Quiz: React.FC = () => {
           <h1>{score}</h1>
           <div className="sub-result">
             <IonIcon icon={trophyOutline} />
-            <span>{correctCount} de {mockQuestions.length} corretas</span>
+            <span>{correctCount} de {(questions && questions.length > 0) ? questions.length : 5} corretas</span>
           </div>
         </div>
 
@@ -279,21 +298,21 @@ const Quiz: React.FC = () => {
                 <div className="res-card">
                   <div className="icon-c green"><IonIcon icon={statsChartOutline} /></div>
                   <span>Precisão</span>
-                  <strong>{Math.round((correctCount / mockQuestions.length) * 100)}%</strong>
+                  <strong>{(() => { const denom = (questions && questions.length > 0) ? questions.length : 5; return denom > 0 ? Math.round((correctCount / denom) * 100) : 0; })()}%</strong>
                 </div>
               </IonCol>
               <IonCol size="4">
                 <div className="res-card">
                   <div className="icon-c orange"><IonIcon icon={ribbonOutline} /></div>
                   <span>Moedas</span>
-                  <strong>+{Math.floor(score / 10)}</strong>
+                  <div className="tag-red">Em breve</div>
                 </div>
               </IonCol>
               <IonCol size="4">
                 <div className="res-card">
                   <div className="icon-c purple"><IonIcon icon={flashOutline} /></div>
                   <span>XP Ganho</span>
-                  <strong>+{score}</strong>
+                  <div className="tag-red">Em breve</div>
                 </div>
               </IonCol>
             </IonRow>
@@ -304,7 +323,7 @@ const Quiz: React.FC = () => {
               <span>Taxa de Acerto</span>
               <div className="tag-green">Done</div>
             </div>
-            <IonProgressBar value={correctCount / mockQuestions.length} color="success"></IonProgressBar>
+            <IonProgressBar value={(questions && questions.length > 0) ? (correctCount / questions.length) : (correctCount / 5)} color="success"></IonProgressBar>
           </div>
 
           <div className="action-buttons section-margin">

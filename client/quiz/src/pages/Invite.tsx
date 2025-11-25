@@ -22,7 +22,12 @@ const Invite: React.FC = () => {
       await apiPost<boolean>('/auth/v1/invite', { email }, token);
       setSent(true);
     } catch (err: any) {
-      setError('Falha ao enviar convite');
+      const msg = String(err?.message || '');
+      if (msg.includes('409')) {
+        setError('O convite para esse Email já foi enviado');
+      } else {
+        setError('Falha ao enviar convite');
+      }
     }
   };
 
@@ -72,4 +77,3 @@ const Invite: React.FC = () => {
 };
 
 export default Invite;
-

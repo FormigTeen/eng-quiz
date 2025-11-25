@@ -1,0 +1,852 @@
+[
+  {
+    "uuid": "q1",
+    "text": "Em que ano a seleção brasileira conquistou sua primeira Copa do Mundo?",
+    "options": [
+      { "text": "1930" },
+      { "text": "1938" },
+      { "text": "1950" },
+      { "text": "1954" },
+      { "text": "1962" },
+      { "text": "1966" },
+      { "text": "1970" },
+      { "text": "1974" },
+      { "text": "1994" },
+      { "text": "2002" }
+    ],
+    "answer": { "text": "1958" }
+  },
+  {
+    "uuid": "q2",
+    "text": "Qual clube brasileiro é conhecido como 'Verdão'?",
+    "options": [
+      { "text": "Flamengo" },
+      { "text": "Corinthians" },
+      { "text": "São Paulo" },
+      { "text": "Santos" },
+      { "text": "Grêmio" },
+      { "text": "Internacional" },
+      { "text": "Cruzeiro" },
+      { "text": "Atlético Mineiro" },
+      { "text": "Fluminense" },
+      { "text": "Vasco da Gama" }
+    ],
+    "answer": { "text": "Palmeiras" }
+  },
+  {
+    "uuid": "q3",
+    "text": "Qual jogador é o maior artilheiro da história da seleção brasileira em jogos oficiais pela FIFA?",
+    "options": [
+      { "text": "Pelé" },
+      { "text": "Romário" },
+      { "text": "Ronaldo Fenômeno" },
+      { "text": "Zico" },
+      { "text": "Rivaldo" },
+      { "text": "Bebeto" },
+      { "text": "Ronaldinho Gaúcho" },
+      { "text": "Adriano" },
+      { "text": "Tostão" },
+      { "text": "Jairzinho" }
+    ],
+    "answer": { "text": "Neymar" }
+  },
+  {
+    "uuid": "q4",
+    "text": "Qual clube brasileiro revelou Pelé para o futebol profissional?",
+    "options": [
+      { "text": "Flamengo" },
+      { "text": "Corinthians" },
+      { "text": "Vasco da Gama" },
+      { "text": "Botafogo" },
+      { "text": "São Paulo" },
+      { "text": "Palmeiras" },
+      { "text": "Fluminense" },
+      { "text": "Cruzeiro" },
+      { "text": "Atlético Mineiro" },
+      { "text": "Grêmio" }
+    ],
+    "answer": { "text": "Santos" }
+  },
+  {
+    "uuid": "q5",
+    "text": "Qual seleção o Brasil derrotou na final da Copa do Mundo de 2002?",
+    "options": [
+      { "text": "Argentina" },
+      { "text": "Itália" },
+      { "text": "França" },
+      { "text": "Holanda" },
+      { "text": "Inglaterra" },
+      { "text": "Espanha" },
+      { "text": "Uruguai" },
+      { "text": "Croácia" },
+      { "text": "Portugal" },
+      { "text": "México" }
+    ],
+    "answer": { "text": "Alemanha" }
+  },
+  {
+    "uuid": "q6",
+    "text": "Qual é o principal estádio onde o Flamengo manda a maioria de seus jogos como mandante?",
+    "options": [
+      { "text": "Allianz Parque" },
+      { "text": "Neo Química Arena" },
+      { "text": "Morumbi" },
+      { "text": "Mineirão" },
+      { "text": "Beira-Rio" },
+      { "text": "Vila Belmiro" },
+      { "text": "São Januário" },
+      { "text": "Arena da Baixada" },
+      { "text": "Castelão" },
+      { "text": "Mangueirão" }
+    ],
+    "answer": { "text": "Maracanã" }
+  },
+  {
+    "uuid": "q7",
+    "text": "Qual clube brasileiro é apelidado de 'Timão'?",
+    "options": [
+      { "text": "Palmeiras" },
+      { "text": "Flamengo" },
+      { "text": "Santos" },
+      { "text": "São Paulo" },
+      { "text": "Vasco da Gama" },
+      { "text": "Fluminense" },
+      { "text": "Grêmio" },
+      { "text": "Cruzeiro" },
+      { "text": "Internacional" },
+      { "text": "Atlético Mineiro" }
+    ],
+    "answer": { "text": "Corinthians" }
+  },
+  {
+    "uuid": "q8",
+    "text": "Quantas Copas do Mundo a seleção brasileira conquistou até a edição de 2022?",
+    "options": [
+      { "text": "1" },
+      { "text": "2" },
+      { "text": "3" },
+      { "text": "4" },
+      { "text": "6" },
+      { "text": "7" },
+      { "text": "8" },
+      { "text": "9" },
+      { "text": "10" },
+      { "text": "11" }
+    ],
+    "answer": { "text": "5" }
+  },
+  {
+    "uuid": "q9",
+    "text": "Qual jogador brasileiro ficou conhecido mundialmente como 'Fenômeno'?",
+    "options": [
+      { "text": "Ronaldinho Gaúcho" },
+      { "text": "Romário" },
+      { "text": "Pelé" },
+      { "text": "Neymar" },
+      { "text": "Kaká" },
+      { "text": "Zico" },
+      { "text": "Rivaldo" },
+      { "text": "Adriano" },
+      { "text": "Bebeto" },
+      { "text": "Careca" }
+    ],
+    "answer": { "text": "Ronaldo" }
+  },
+  {
+    "uuid": "q10",
+    "text": "Qual clube brasileiro é conhecido como 'Tricolor Paulista'?",
+    "options": [
+      { "text": "Fluminense" },
+      { "text": "Grêmio" },
+      { "text": "Bahia" },
+      { "text": "Palmeiras" },
+      { "text": "Corinthians" },
+      { "text": "Santos" },
+      { "text": "Flamengo" },
+      { "text": "Vasco da Gama" },
+      { "text": "Cruzeiro" },
+      { "text": "Atlético Paranaense" }
+    ],
+    "answer": { "text": "São Paulo" }
+  },
+  {
+    "uuid": "q11",
+    "text": "Qual foi o adversário do Brasil na final da Copa do Mundo de 1958?",
+    "options": [
+      { "text": "Alemanha Ocidental" },
+      { "text": "Argentina" },
+      { "text": "Uruguai" },
+      { "text": "Itália" },
+      { "text": "França" },
+      { "text": "Inglaterra" },
+      { "text": "Espanha" },
+      { "text": "Hungria" },
+      { "text": "Tchecoslováquia" },
+      { "text": "Portugal" }
+    ],
+    "answer": { "text": "Suécia" }
+  },
+  {
+    "uuid": "q12",
+    "text": "Qual clube brasileiro é conhecido como 'Galo'?",
+    "options": [
+      { "text": "Cruzeiro" },
+      { "text": "Flamengo" },
+      { "text": "Corinthians" },
+      { "text": "Vasco da Gama" },
+      { "text": "Grêmio" },
+      { "text": "Internacional" },
+      { "text": "Bahia" },
+      { "text": "Sport" },
+      { "text": "Botafogo" },
+      { "text": "Fluminense" }
+    ],
+    "answer": { "text": "Atlético Mineiro" }
+  },
+  {
+    "uuid": "q13",
+    "text": "Quem foi o técnico da seleção brasileira na conquista da Copa do Mundo de 2002?",
+    "options": [
+      { "text": "Carlos Alberto Parreira" },
+      { "text": "Zagallo" },
+      { "text": "Tite" },
+      { "text": "Dunga" },
+      { "text": "Telê Santana" },
+      { "text": "Mano Menezes" },
+      { "text": "Leão" },
+      { "text": "Vanderlei Luxemburgo" },
+      { "text": "João Saldanha" },
+      { "text": "Oswaldo de Oliveira" }
+    ],
+    "answer": { "text": "Luiz Felipe Scolari" }
+  },
+  {
+    "uuid": "q14",
+    "text": "Qual clube brasileiro é chamado de 'Gigante da Colina'?",
+    "options": [
+      { "text": "Fluminense" },
+      { "text": "Botafogo" },
+      { "text": "Flamengo" },
+      { "text": "Corinthians" },
+      { "text": "Palmeiras" },
+      { "text": "Santos" },
+      { "text": "Bahia" },
+      { "text": "Cruzeiro" },
+      { "text": "Grêmio" },
+      { "text": "Internacional" }
+    ],
+    "answer": { "text": "Vasco da Gama" }
+  },
+  {
+    "uuid": "q15",
+    "text": "Qual jogador brasileiro foi eleito melhor do mundo pela FIFA em 1999?",
+    "options": [
+      { "text": "Ronaldinho Gaúcho" },
+      { "text": "Ronaldo" },
+      { "text": "Romário" },
+      { "text": "Kaká" },
+      { "text": "Zico" },
+      { "text": "Robinho" },
+      { "text": "Rivaldo em 1998" },
+      { "text": "Adriano" },
+      { "text": "Neymar" },
+      { "text": "Cafu" }
+    ],
+    "answer": { "text": "Rivaldo" }
+  },
+  {
+    "uuid": "q16",
+    "text": "Qual clube brasileiro revelou Neymar para o futebol profissional?",
+    "options": [
+      { "text": "Flamengo" },
+      { "text": "Palmeiras" },
+      { "text": "Corinthians" },
+      { "text": "São Paulo" },
+      { "text": "Grêmio" },
+      { "text": "Atlético Mineiro" },
+      { "text": "Cruzeiro" },
+      { "text": "Vasco da Gama" },
+      { "text": "Botafogo" },
+      { "text": "Fluminense" }
+    ],
+    "answer": { "text": "Santos" }
+  },
+  {
+    "uuid": "q17",
+    "text": "Qual é considerado o maior clássico regional do Flamengo no Rio de Janeiro, tradicionalmente chamado de 'Fla-Flu'?",
+    "options": [
+      { "text": "Flamengo x Vasco" },
+      { "text": "Flamengo x Botafogo" },
+      { "text": "Flamengo x Bangu" },
+      { "text": "Flamengo x América-RJ" },
+      { "text": "Flamengo x Vasco da Gama" },
+      { "text": "Flamengo x Cabofriense" },
+      { "text": "Flamengo x Volta Redonda" },
+      { "text": "Flamengo x Madureira" },
+      { "text": "Flamengo x Olaria" },
+      { "text": "Flamengo x Nova Iguaçu" }
+    ],
+    "answer": { "text": "Flamengo x Fluminense" }
+  },
+  {
+    "uuid": "q18",
+    "text": "Quantos títulos de Copa do Mundo a seleção brasileira conquistou na década de 1970?",
+    "options": [
+      { "text": "0" },
+      { "text": "2" },
+      { "text": "3" },
+      { "text": "4" },
+      { "text": "5" },
+      { "text": "6" },
+      { "text": "7" },
+      { "text": "8" },
+      { "text": "9" },
+      { "text": "10" }
+    ],
+    "answer": { "text": "1" }
+  },
+  {
+    "uuid": "q19",
+    "text": "Em qual país o Brasil conquistou o tetracampeonato mundial em 1994?",
+    "options": [
+      { "text": "México" },
+      { "text": "Itália" },
+      { "text": "França" },
+      { "text": "Alemanha" },
+      { "text": "Espanha" },
+      { "text": "Japão" },
+      { "text": "Coreia do Sul" },
+      { "text": "Inglaterra" },
+      { "text": "Argentina" },
+      { "text": "Rússia" }
+    ],
+    "answer": { "text": "Estados Unidos" }
+  },
+  {
+    "uuid": "q20",
+    "text": "Qual clube brasileiro é conhecido como 'Imortal Tricolor'?",
+    "options": [
+      { "text": "Fluminense" },
+      { "text": "São Paulo" },
+      { "text": "Bahia" },
+      { "text": "Palmeiras" },
+      { "text": "Corinthians" },
+      { "text": "Santos" },
+      { "text": "Internacional" },
+      { "text": "Cruzeiro" },
+      { "text": "Atlético Mineiro" },
+      { "text": "Vasco da Gama" }
+    ],
+    "answer": { "text": "Grêmio" }
+  },
+  {
+    "uuid": "q21",
+    "text": "Quem marcou, de pênalti, o terceiro gol do Brasil na final da Copa América de 2019 contra o Peru?",
+    "options": [
+      { "text": "Gabriel Jesus" },
+      { "text": "Everton Cebolinha" },
+      { "text": "Philippe Coutinho" },
+      { "text": "Roberto Firmino" },
+      { "text": "Daniel Alves" },
+      { "text": "Thiago Silva" },
+      { "text": "Casemiro" },
+      { "text": "Arthur" },
+      { "text": "Marquinhos" },
+      { "text": "Alisson" }
+    ],
+    "answer": { "text": "Richarlison" }
+  },
+  {
+    "uuid": "q22",
+    "text": "Qual é o estádio do Corinthians para jogos como mandante em competições nacionais e internacionais?",
+    "options": [
+      { "text": "Allianz Parque" },
+      { "text": "Maracanã" },
+      { "text": "Morumbi" },
+      { "text": "Vila Belmiro" },
+      { "text": "Mineirão" },
+      { "text": "Beira-Rio" },
+      { "text": "Engenhão" },
+      { "text": "Arena da Baixada" },
+      { "text": "São Januário" },
+      { "text": "Castelão" }
+    ],
+    "answer": { "text": "Neo Química Arena" }
+  },
+  {
+    "uuid": "q23",
+    "text": "Qual clube brasileiro é apelidado de 'Raposa'?",
+    "options": [
+      { "text": "Atlético Mineiro" },
+      { "text": "Flamengo" },
+      { "text": "Corinthians" },
+      { "text": "Grêmio" },
+      { "text": "Internacional" },
+      { "text": "Palmeiras" },
+      { "text": "Santos" },
+      { "text": "São Paulo" },
+      { "text": "Vasco da Gama" },
+      { "text": "Fluminense" }
+    ],
+    "answer": { "text": "Cruzeiro" }
+  },
+  {
+    "uuid": "q24",
+    "text": "Quem é conhecido mundialmente como o 'Rei do Futebol'?",
+    "options": [
+      { "text": "Garrincha" },
+      { "text": "Zico" },
+      { "text": "Romário" },
+      { "text": "Ronaldo" },
+      { "text": "Ronaldinho Gaúcho" },
+      { "text": "Neymar" },
+      { "text": "Rivaldo" },
+      { "text": "Jairzinho" },
+      { "text": "Zagallo" },
+      { "text": "Kaká" }
+    ],
+    "answer": { "text": "Pelé" }
+  },
+  {
+    "uuid": "q25",
+    "text": "Qual foi o placar da final da Copa do Mundo de 1970 entre Brasil e Itália?",
+    "options": [
+      { "text": "3 a 1 para o Brasil" },
+      { "text": "2 a 0 para o Brasil" },
+      { "text": "1 a 0 para o Brasil" },
+      { "text": "4 a 2 para o Brasil" },
+      { "text": "3 a 2 para o Brasil" },
+      { "text": "0 a 0" },
+      { "text": "2 a 1 para a Itália" },
+      { "text": "1 a 1" },
+      { "text": "2 a 2" },
+      { "text": "1 a 0 para a Itália" }
+    ],
+    "answer": { "text": "4 a 1 para o Brasil" }
+  },
+  {
+    "uuid": "q26",
+    "text": "Qual clube brasileiro é conhecido como 'Peixe'?",
+    "options": [
+      { "text": "Flamengo" },
+      { "text": "Corinthians" },
+      { "text": "Palmeiras" },
+      { "text": "São Paulo" },
+      { "text": "Vasco da Gama" },
+      { "text": "Fluminense" },
+      { "text": "Grêmio" },
+      { "text": "Cruzeiro" },
+      { "text": "Bahia" },
+      { "text": "Sport" }
+    ],
+    "answer": { "text": "Santos" }
+  },
+  {
+    "uuid": "q27",
+    "text": "Qual jogador brasileiro eternizou a camisa 10 do Santos e da seleção brasileira?",
+    "options": [
+      { "text": "Neymar" },
+      { "text": "Zico" },
+      { "text": "Rivaldo" },
+      { "text": "Romário" },
+      { "text": "Ronaldo" },
+      { "text": "Garrincha" },
+      { "text": "Tostão" },
+      { "text": "Rivelino" },
+      { "text": "Kaká" },
+      { "text": "Ronaldinho Gaúcho" }
+    ],
+    "answer": { "text": "Pelé" }
+  },
+  {
+    "uuid": "q28",
+    "text": "Qual clube do Rio Grande do Sul é conhecido como 'Colorado'?",
+    "options": [
+      { "text": "Grêmio" },
+      { "text": "Juventude" },
+      { "text": "Brasil de Pelotas" },
+      { "text": "Caxias" },
+      { "text": "Ypiranga-RS" },
+      { "text": "São José-RS" },
+      { "text": "Novo Hamburgo" },
+      { "text": "Lajeadense" },
+      { "text": "Pelotas" },
+      { "text": "Aimoré" }
+    ],
+    "answer": { "text": "Internacional" }
+  },
+  {
+    "uuid": "q29",
+    "text": "Em que ano o Brasil sediou pela primeira vez uma Copa do Mundo?",
+    "options": [
+      { "text": "1930" },
+      { "text": "1934" },
+      { "text": "1938" },
+      { "text": "1954" },
+      { "text": "1958" },
+      { "text": "1962" },
+      { "text": "1966" },
+      { "text": "1970" },
+      { "text": "1978" },
+      { "text": "2014" }
+    ],
+    "answer": { "text": "1950" }
+  },
+  {
+    "uuid": "q30",
+    "text": "Qual seleção eliminou o Brasil na Copa do Mundo de 1982, no famoso jogo do 'Sarriá'?",
+    "options": [
+      { "text": "Argentina" },
+      { "text": "França" },
+      { "text": "Alemanha Ocidental" },
+      { "text": "Inglaterra" },
+      { "text": "Espanha" },
+      { "text": "Polônia" },
+      { "text": "URSS" },
+      { "text": "Hungria" },
+      { "text": "Iugoslávia" },
+      { "text": "Portugal" }
+    ],
+    "answer": { "text": "Itália" }
+  },
+  {
+    "uuid": "q31",
+    "text": "Qual jogador brasileiro ficou conhecido como 'Anjo das Pernas Tortas'?",
+    "options": [
+      { "text": "Pelé" },
+      { "text": "Jairzinho" },
+      { "text": "Tostão" },
+      { "text": "Rivelino" },
+      { "text": "Zico" },
+      { "text": "Romário" },
+      { "text": "Ronaldo" },
+      { "text": "Neymar" },
+      { "text": "Rivaldo" },
+      { "text": "Kaká" }
+    ],
+    "answer": { "text": "Garrincha" }
+  },
+  {
+    "uuid": "q32",
+    "text": "Qual clube brasileiro é apelidado de 'Flu'?",
+    "options": [
+      { "text": "Flamengo" },
+      { "text": "Fortaleza" },
+      { "text": "Figueirense" },
+      { "text": "Floresta" },
+      { "text": "Corinthians" },
+      { "text": "Palmeiras" },
+      { "text": "Santos" },
+      { "text": "São Paulo" },
+      { "text": "Bahia" },
+      { "text": "Sport" }
+    ],
+    "answer": { "text": "Fluminense" }
+  },
+  {
+    "uuid": "q33",
+    "text": "Qual jogador marcou o gol do título mundial do Corinthians contra o Chelsea em 2012?",
+    "options": [
+      { "text": "Emerson Sheik" },
+      { "text": "Danilo" },
+      { "text": "Paulinho" },
+      { "text": "Jorge Henrique" },
+      { "text": "Romarinho" },
+      { "text": "Alex" },
+      { "text": "Ralf" },
+      { "text": "Fábio Santos" },
+      { "text": "Cássio" },
+      { "text": "Chicão" }
+    ],
+    "answer": { "text": "Paolo Guerrero" }
+  },
+  {
+    "uuid": "q34",
+    "text": "Qual foi o primeiro clube brasileiro a conquistar a Copa Libertadores da América?",
+    "options": [
+      { "text": "Flamengo" },
+      { "text": "Palmeiras" },
+      { "text": "Corinthians" },
+      { "text": "Cruzeiro" },
+      { "text": "Grêmio" },
+      { "text": "São Paulo" },
+      { "text": "Vasco da Gama" },
+      { "text": "Internacional" },
+      { "text": "Atlético Mineiro" },
+      { "text": "Fluminense" }
+    ],
+    "answer": { "text": "Santos" }
+  },
+  {
+    "uuid": "q35",
+    "text": "Quantas medalhas de ouro olímpicas no futebol masculino o Brasil conquistou até os Jogos de Tóquio 2020?",
+    "options": [
+      { "text": "0" },
+      { "text": "1" },
+      { "text": "3" },
+      { "text": "4" },
+      { "text": "5" },
+      { "text": "6" },
+      { "text": "7" },
+      { "text": "8" },
+      { "text": "9" },
+      { "text": "10" }
+    ],
+    "answer": { "text": "2" }
+  },
+  {
+    "uuid": "q36",
+    "text": "Em qual clube brasileiro Romário se destacou antes de se transferir para o PSV Eindhoven?",
+    "options": [
+      { "text": "Flamengo" },
+      { "text": "Fluminense" },
+      { "text": "Botafogo" },
+      { "text": "Corinthians" },
+      { "text": "Palmeiras" },
+      { "text": "Santos" },
+      { "text": "Cruzeiro" },
+      { "text": "Grêmio" },
+      { "text": "Internacional" },
+      { "text": "Atlético Mineiro" }
+    ],
+    "answer": { "text": "Vasco da Gama" }
+  },
+  {
+    "uuid": "q37",
+    "text": "Qual treinador comandou a seleção brasileira na conquista da Copa do Mundo de 1994?",
+    "options": [
+      { "text": "Zagallo" },
+      { "text": "Telê Santana" },
+      { "text": "Luiz Felipe Scolari" },
+      { "text": "Tite" },
+      { "text": "Dunga" },
+      { "text": "Emerson Leão" },
+      { "text": "Vanderlei Luxemburgo" },
+      { "text": "João Saldanha" },
+      { "text": "Oswaldo Brandão" },
+      { "text": "Parreira em 2006" }
+    ],
+    "answer": { "text": "Carlos Alberto Parreira" }
+  },
+  {
+    "uuid": "q38",
+    "text": "Qual clube brasileiro é conhecido como 'Porco'?",
+    "options": [
+      { "text": "Corinthians" },
+      { "text": "Flamengo" },
+      { "text": "Santos" },
+      { "text": "São Paulo" },
+      { "text": "Grêmio" },
+      { "text": "Cruzeiro" },
+      { "text": "Atlético Mineiro" },
+      { "text": "Vasco da Gama" },
+      { "text": "Bahia" },
+      { "text": "Fluminense" }
+    ],
+    "answer": { "text": "Palmeiras" }
+  },
+  {
+    "uuid": "q39",
+    "text": "Qual jogador brasileiro ficou marcado pelo 'gol de placa' anotado no Maracanã em 1961?",
+    "options": [
+      { "text": "Garrincha" },
+      { "text": "Zico" },
+      { "text": "Romário" },
+      { "text": "Rivelino" },
+      { "text": "Neymar" },
+      { "text": "Ronaldo" },
+      { "text": "Jairzinho" },
+      { "text": "Tostão" },
+      { "text": "Ademir da Guia" },
+      { "text": "Didi" }
+    ],
+    "answer": { "text": "Pelé" }
+  },
+  {
+    "uuid": "q40",
+    "text": "Contra qual seleção o Brasil perdeu o título da Copa do Mundo de 1950, no episódio conhecido como 'Maracanaço'?",
+    "options": [
+      { "text": "Argentina" },
+      { "text": "Alemanha" },
+      { "text": "Itália" },
+      { "text": "França" },
+      { "text": "Inglaterra" },
+      { "text": "Espanha" },
+      { "text": "Suécia" },
+      { "text": "Hungria" },
+      { "text": "Portugal" },
+      { "text": "Iugoslávia" }
+    ],
+    "answer": { "text": "Uruguai" }
+  },
+  {
+    "uuid": "q41",
+    "text": "Qual clube brasileiro revelou Ronaldinho Gaúcho para o futebol profissional?",
+    "options": [
+      { "text": "Flamengo" },
+      { "text": "Corinthians" },
+      { "text": "Atlético Mineiro" },
+      { "text": "Cruzeiro" },
+      { "text": "Internacional" },
+      { "text": "Vasco da Gama" },
+      { "text": "Fluminense" },
+      { "text": "Bahia" },
+      { "text": "Santos" },
+      { "text": "São Paulo" }
+    ],
+    "answer": { "text": "Grêmio" }
+  },
+  {
+    "uuid": "q42",
+    "text": "Qual é o estádio do Palmeiras para jogos como mandante?",
+    "options": [
+      { "text": "Morumbi" },
+      { "text": "Maracanã" },
+      { "text": "Neo Química Arena" },
+      { "text": "Mineirão" },
+      { "text": "Beira-Rio" },
+      { "text": "Vila Belmiro" },
+      { "text": "São Januário" },
+      { "text": "Engenhão" },
+      { "text": "Arena da Baixada" },
+      { "text": "Castelão" }
+    ],
+    "answer": { "text": "Allianz Parque" }
+  },
+  {
+    "uuid": "q43",
+    "text": "Quem marcou os dois gols do Brasil na final da Copa do Mundo de 2002 contra a Alemanha?",
+    "options": [
+      { "text": "Rivaldo" },
+      { "text": "Ronaldinho Gaúcho" },
+      { "text": "Kléberson" },
+      { "text": "Cafu" },
+      { "text": "Roberto Carlos" },
+      { "text": "Gilberto Silva" },
+      { "text": "Denílson" },
+      { "text": "Juninho Paulista" },
+      { "text": "Edílson" },
+      { "text": "Adriano" }
+    ],
+    "answer": { "text": "Ronaldo" }
+  },
+  {
+    "uuid": "q44",
+    "text": "Qual clube brasileiro é conhecido como 'Fogão'?",
+    "options": [
+      { "text": "Flamengo" },
+      { "text": "Fluminense" },
+      { "text": "Vasco da Gama" },
+      { "text": "Corinthians" },
+      { "text": "Palmeiras" },
+      { "text": "Santos" },
+      { "text": "São Paulo" },
+      { "text": "Cruzeiro" },
+      { "text": "Grêmio" },
+      { "text": "Internacional" }
+    ],
+    "answer": { "text": "Botafogo" }
+  },
+  {
+    "uuid": "q45",
+    "text": "Qual jogador brasileiro foi eleito melhor do mundo pela FIFA em 2007?",
+    "options": [
+      { "text": "Ronaldinho Gaúcho" },
+      { "text": "Ronaldo" },
+      { "text": "Adriano" },
+      { "text": "Robinho" },
+      { "text": "Rivaldo" },
+      { "text": "Neymar" },
+      { "text": "Thiago Silva" },
+      { "text": "Cafu" },
+      { "text": "Lúcio" },
+      { "text": "Dida" }
+    ],
+    "answer": { "text": "Kaká" }
+  },
+  {
+    "uuid": "q46",
+    "text": "Qual seleção derrotou o Brasil por 7 a 1 na semifinal da Copa do Mundo de 2014?",
+    "options": [
+      { "text": "Argentina" },
+      { "text": "Holanda" },
+      { "text": "Espanha" },
+      { "text": "Itália" },
+      { "text": "França" },
+      { "text": "Uruguai" },
+      { "text": "Inglaterra" },
+      { "text": "Bélgica" },
+      { "text": "Portugal" },
+      { "text": "Chile" }
+    ],
+    "answer": { "text": "Alemanha" }
+  },
+  {
+    "uuid": "q47",
+    "text": "Qual clube brasileiro é conhecido carinhosamente como 'Bahêa'?",
+    "options": [
+      { "text": "Vitória" },
+      { "text": "Sport" },
+      { "text": "Santa Cruz" },
+      { "text": "Náutico" },
+      { "text": "Ceará" },
+      { "text": "Fortaleza" },
+      { "text": "Flamengo" },
+      { "text": "Corinthians" },
+      { "text": "CSA" },
+      { "text": "CRB" }
+    ],
+    "answer": { "text": "Bahia" }
+  },
+  {
+    "uuid": "q48",
+    "text": "Quem foi o capitão da seleção brasileira na conquista da Copa do Mundo de 2002?",
+    "options": [
+      { "text": "Ronaldo" },
+      { "text": "Rivaldo" },
+      { "text": "Lúcio" },
+      { "text": "Roque Júnior" },
+      { "text": "Roberto Carlos" },
+      { "text": "Gilberto Silva" },
+      { "text": "Kléberson" },
+      { "text": "Ronaldinho Gaúcho" },
+      { "text": "Dida" },
+      { "text": "Juninho Paulista" }
+    ],
+    "answer": { "text": "Cafu" }
+  },
+  {
+    "uuid": "q49",
+    "text": "Qual clube brasileiro é conhecido como 'Leão do Pici'?",
+    "options": [
+      { "text": "Ceará" },
+      { "text": "Sport" },
+      { "text": "Vitória" },
+      { "text": "Bahia" },
+      { "text": "Náutico" },
+      { "text": "Santa Cruz" },
+      { "text": "CSA" },
+      { "text": "CRB" },
+      { "text": "ABC" },
+      { "text": "América-RN" }
+    ],
+    "answer": { "text": "Fortaleza" }
+  },
+  {
+    "uuid": "q50",
+    "text": "Qual jogador é o maior artilheiro da história do Flamengo em jogos oficiais?",
+    "options": [
+      { "text": "Romário" },
+      { "text": "Adriano" },
+      { "text": "Nunes" },
+      { "text": "Gabigol" },
+      { "text": "Bebeto" },
+      { "text": "Petkovic" },
+      { "text": "Júnior" },
+      { "text": "Leandro" },
+      { "text": "Neymar" },
+      { "text": "Ronaldinho Gaúcho" }
+    ],
+    "answer": { "text": "Zico" }
+  }
+]

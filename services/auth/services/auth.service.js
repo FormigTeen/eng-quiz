@@ -34,10 +34,71 @@ module.exports = {
       const seed = this.getPasswordSeed();
       // Using HMAC-SHA256 with a global seed (pepper)
       return crypto.createHmac("sha256", seed).update(String(password)).digest("hex");
+    },
+    async sendInviteEmail(toEmail) {
+      const host = process.env.SMTP_HOST;
+      const port = Number(process.env.SMTP_PORT || 587);
+      const user = process.env.SMTP_LOGIN;
+      const pass = process.env.SMTP_KEY;
+      const from = process.env.SMTP_FROM || user;
+
+      if (!host || !user || !pass) {
+        throw new Error("SMTP env not fully configured");
+      }
+
+      const transporter = nodemailer.createTransport({ host, port, secure: false, auth: { user, pass } });
+      await transporter.sendMail({ from, to: toEmail, subject: "Convite de Teste ENG QUIZ", text: "Convite de Teste ENG QUIZ" });
     }
   },
 
   actions: {
+    // invite: sends email to :email if not already invited by the current user within 1 day
+    invite: {
+      auth: "required",
+      async handler(ctx) {
+        const schema = yup.object({ email: yup.string().email().required() });
+        try {
+          await schema.validate(ctx.params, { abortEarly: false, stripUnknown: true });
+        } catch (e) {
+          return false;
+        }
+        const toEmail = String(ctx.params.email).trim().toLowerCase();
+        const fromEmail = String(ctx.meta?.user?.email || "").trim().toLowerCase();
+        if (!fromEmail) {
+          // Not authenticated in context
+          const { MoleculerClientError } = require("moleculer").Errors;
+          throw new MoleculerClientError("Unauthorized", 401, "UNAUTHORIZED");
+        }
+        if (!this.redis) {
+          this.logger.warn("Redis client not initialized; cannot prevent duplicate invites");
+        }
+        const key = `${fromEmail}:${toEmail}`;
+        try {
+          if (this.redis) {
+            const exists = await this.redis.get(key);
+            if (exists) {
+              const { MoleculerClientError } = require("moleculer").Errors;
+              throw new MoleculerClientError("O convite para esse Email já foi enviado", 409, "ALREADY_INVITED");
+            }
+          }
+
+          // Send email
+          await this.sendInviteEmail(toEmail);
+
+          // Set lock for 1 day
+          if (this.redis) {
+            await this.redis.set(key, "1", "EX", 24 * 60 * 60);
+          }
+          return true;
+        } catch (err) {
+          // Re-throw MoleculerClientErrors as-is; otherwise map to 500
+          if (err && err.code && typeof err.code === "number") throw err;
+          this.logger.error("Invite failed", err?.message || err);
+          const { MoleculerClientError } = require("moleculer").Errors;
+          throw new MoleculerClientError("Failed to send invite", 500, "INVITE_FAILED");
+        }
+      }
+    },
     // logout receives a JWT token and blacklists it for 7 days
     logout: {
       async handler(ctx) {
@@ -266,7 +327,22 @@ module.exports = {
 
         this.logger.info(`Invite email sent to ${email}`);
       } catch (err) {
-        this.logger.error("Failed to send invite email", err);
+      this.logger.error("Failed to send invite email", err);
+    }
+    },
+
+    async "engine.score.pick"(ctx) {
+      try {
+        const email = String(ctx.params?.email || "").trim().toLowerCase();
+        const positive = Number(ctx.params?.positive || 0);
+        const negative = Number(ctx.params?.negative || 0);
+        if (!email) return;
+        await this.adapter.collection.updateOne(
+          { email },
+          { $inc: { "score.positive": positive, "score.negative": negative } }
+        );
+      } catch (e) {
+        this.logger.warn("Failed to apply engine.score.pick to user", e?.message || e);
       }
     }
   },

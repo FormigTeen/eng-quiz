@@ -91,4 +91,26 @@ describe('Auth via Gateway', () => {
     expect(inviteRes.status).toBe(200);
     expect(inviteRes.data).toBe(true);
   });
+
+  test('invite duplicado: retorna 409 para mesmo remetente/destinatário', async () => {
+    // autentica como admin
+    const login = await http.post('/auth/v1/login', { email: 'admin@admin.com', password: 'admin123' });
+    const token = login.data.token;
+
+    const to = `dup.${Date.now()}@example.com`;
+    const first = await http.post(
+      '/auth/v1/invite',
+      { email: to },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    expect(first.status).toBe(200);
+    expect(first.data).toBe(true);
+
+    const second = await http.post(
+      '/auth/v1/invite',
+      { email: to },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    expect([409, 429]).toContain(second.status);
+  });
 });

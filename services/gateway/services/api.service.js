@@ -36,7 +36,10 @@ module.exports = {
                     "gateway.content.v1.createQuestion",
                     "gateway.content.v1.toggleQuizQuestion",
                     "gateway.content.v1.getQuizzes",
-                    "gateway.content.v1.getQuiz"
+                    "gateway.content.v1.getQuiz",
+                    "gateway.engine.v1.quizRandom",
+                    "gateway.engine.v1.track",
+                    "gateway.engine.v1.pick"
                 ],
                 use: [],
                 mergeParams: true,
@@ -55,7 +58,10 @@ module.exports = {
                     "POST content/v1/question": "gateway.content.v1.createQuestion",
                     "POST content/v1/quiz/toggle-question": "gateway.content.v1.toggleQuizQuestion",
                     "GET content/v1/quizzes": "gateway.content.v1.getQuizzes",
-                    "GET content/v1/quiz/:id": "gateway.content.v1.getQuiz"
+                    "GET content/v1/quiz/:id": "gateway.content.v1.getQuiz",
+                    "GET engine/v1/quiz/random": "gateway.engine.v1.quizRandom",
+                    "POST engine/v1/track": "gateway.engine.v1.track",
+                    "POST engine/v1/pick": "gateway.engine.v1.pick"
                 },
                 callOptions: {},
                 bodyParsers: {
