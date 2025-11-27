@@ -115,20 +115,9 @@ module.exports = {
                 throw new ApiGateway.Errors.UnAuthorizedError(ApiGateway.Errors.ERR_INVALID_TOKEN);
             }
         }
-        // No token provided; allow anonymous unless route requires auth
         return null;
         },
 
-		/**
-		 * Authorize the request. Check that the authenticated user has right to access the resource.
-		 *
-		 * PLEASE NOTE, IT'S JUST AN EXAMPLE IMPLEMENTATION. DO NOT USE IN PRODUCTION!
-		 *
-		 * @param {Context} ctx
-		 * @param {Object} route
-		 * @param {IncomingRequest} req
-		 * @returns {Promise}
-		 */
 		async authorize(ctx, route, req) {
 			// Get the authenticated user.
 			const user = ctx.meta.user;
