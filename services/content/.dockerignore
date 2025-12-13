@@ -1,0 +1,11 @@
+# Don't copy dependencies and build artifacts into the image context
+node_modules
+.cache
+.tmp
+build
+dist
+public/uploads
+npm-debug.log*
+yarn-error.log*
+.DS_Store
+*.local

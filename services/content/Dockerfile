@@ -10,11 +10,15 @@ ENV NODE_ENV=${NODE_ENV}
 RUN corepack enable && corepack prepare yarn@1.22.22 --activate
 
 WORKDIR /opt/app
-COPY . .
+# Copy manifests first to leverage Docker layer caching
+COPY package.json yarn.lock* ./
 
 # Install dependencies: prefer frozen-lockfile when yarn.lock is present
 RUN yarn config set network-timeout 600000 -g \
   && if [ -f yarn.lock ]; then yarn install --frozen-lockfile; else yarn install --no-lockfile; fi
+
+# Copy the rest of the app
+COPY . .
 
 RUN chown -R node:node /opt/app
 USER node
