@@ -1,0 +1,34 @@
+importScripts('https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/9.0.0/firebase-messaging-compat.js');
+
+// Configurações do seu projeto "Quiz-Engenharia"
+// (Transcrevi da imagem que você mandou)
+const firebaseConfig = {
+      apiKey: "AIzaSyChMaqgH9u94ZJQnpeCOsPG6b8I86tSQ98",
+        authDomain: "quiz-engenharia-dff2a.firebaseapp.com",
+          projectId: "quiz-engenharia-dff2a",
+            storageBucket: "quiz-engenharia-dff2a.firebasestorage.app",
+              messagingSenderId: "309324049426",
+                appId: "1:309324049426:web:0c75775f0f0eb4c2a87ccb",
+                  measurementId: "G-2DSSVVF89C"
+};
+
+firebase.initializeApp(firebaseConfig);
+const messaging = firebase.messaging();
+
+// Configura o recebimento em segundo plano
+messaging.onBackgroundMessage((payload) => {
+      console.log('Notificação recebida:', payload);
+        
+          const notificationTitle = payload.notification.title;
+            const notificationOptions = {
+                    body: payload.notification.body,
+                        icon: '/icons/icon-192x192.png' // Ícone padrão se houver
+            };
+
+              self.registration.showNotification(notificationTitle, notificationOptions);
+});
+
+            }
+})
+}
