@@ -68,12 +68,40 @@ services:
 
   content:
     build: ./content
-    env_file: .env
-    depends_on:
-      - nats
-      - mongodb
+    container_name: content
     restart: unless-stopped
-    command: ["npm", "start", "--", "/app/services/*.service.js", "/app/services/**/*.service.js"]
+    depends_on:
+      - contentdb
+    environment:
+      NODE_ENV: development
+      HOST: 0.0.0.0
+      PORT: 1337
+      DATABASE_CLIENT: postgres
+      DATABASE_HOST: contentdb
+      DATABASE_PORT: 5432
+      DATABASE_NAME: ${CONTENT_DB_NAME:-strapi}
+      DATABASE_USERNAME: ${CONTENT_DB_USER:-strapi}
+      DATABASE_PASSWORD: ${CONTENT_DB_PASSWORD:-strapi}
+      JWT_SECRET: ${CONTENT_JWT_SECRET:-change-me-jwt}
+      ADMIN_JWT_SECRET: ${CONTENT_ADMIN_JWT_SECRET:-change-me-admin-jwt}
+      APP_KEYS: ${CONTENT_APP_KEYS:-key1,key2,key3}
+    ports:
+      - "1337:1337"
+    volumes:
+      - ./content/config:/opt/app/config
+      - ./content/src:/opt/app/src
+      - ./content/public/uploads:/opt/app/public/uploads
+
+  contentdb:
+    image: postgres:16-alpine
+    container_name: contentdb
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${CONTENT_DB_NAME:-strapi}
+      POSTGRES_USER: ${CONTENT_DB_USER:-strapi}
+      POSTGRES_PASSWORD: ${CONTENT_DB_PASSWORD:-strapi}
+    volumes:
+      - contentdb-data:/var/lib/postgresql/data
 
   engine:
     build: ./engine
@@ -90,3 +118,4 @@ networks:
 
 volumes:
   mongo-data:
+  contentdb-data:

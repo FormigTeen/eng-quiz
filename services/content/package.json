@@ -1,20 +1,42 @@
 {
   "name": "content",
-  "version": "1.0.0",
-  "description": "Content microservice (quizzes, questions, teams)",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A Strapi application",
   "scripts": {
-    "dev": "moleculer-runner --repl --hot services/**/*.service.js",
-    "start": "moleculer-runner"
+    "build": "strapi build",
+    "console": "strapi console",
+    "deploy": "strapi deploy",
+    "dev": "strapi develop",
+    "develop": "strapi develop",
+    "start": "strapi start",
+    "strapi": "strapi",
+    "upgrade": "npx @strapi/upgrade latest",
+    "upgrade:dry": "npx @strapi/upgrade latest --dry"
   },
   "dependencies": {
-    "moleculer": "^0.14.26",
-    "moleculer-db-adapter-mongo": "^0.4.21",
-    "nats": "^2.7.1",
-    "uuid": "^9.0.1",
-    "yup": "^1.4.0"
+    "@strapi/plugin-cloud": "5.32.0",
+    "@strapi/plugin-users-permissions": "5.32.0",
+    "@strapi/strapi": "5.32.0",
+    "better-sqlite3": "12.4.1",
+    "pg": "^8.11.3",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "react-router-dom": "^6.0.0",
+    "styled-components": "^6.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "typescript": "^5"
   },
   "engines": {
-    "node": ">= 16.x.x"
+    "node": ">=20.0.0 <=24.x.x",
+    "npm": ">=6.0.0"
+  },
+  "strapi": {
+    "uuid": "ea445039-40af-419c-923e-c308ef318f5c",
+    "installId": "b40dccb01b57af30f934287d049eae0f8616fbe080d2d47198ae51a9048da0f2"
   }
 }
-
