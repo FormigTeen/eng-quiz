@@ -1,0 +1,49 @@
+import { initializeApp } from "firebase/app";
+import { getMessaging, getToken } from "firebase/messaging";
+
+const firebaseConfig = {
+      apiKey: "AIzaSyChMaqgH9u94ZJQnpeCOsPG6b8I86tSQ98",
+        authDomain: "quiz-engenharia-dff2a.firebaseapp.com",
+          projectId: "quiz-engenharia-dff2a",
+            storageBucket: "quiz-engenharia-dff2a.firebasestorage.app",
+              messagingSenderId: "309324049426",
+                appId: "1:309324049426:web:0c75775f0f0eb4c2a87ccb",
+                  measurementId: "G-2DSSVVF89C"
+};
+
+const app = initializeApp(firebaseConfig);
+const messaging = getMessaging(app);
+
+// Sua chave Vapid gerada agora
+const chavePublica = "BHK6MRzXOqgD082r_IH0m054sFv-iUgMoGeGfP87IakiAWOwEa4pv1XVLtkPqkoYW2WlMqN07BcTvWb0QwLWiDM";
+
+export const ativarNotificacoes = () => {
+      Notification.requestPermission().then((permission) => {
+            if (permission === "granted") {
+                      console.log("Permissão concedida! Gerando token...");
+                            getToken(messaging, { vapidKey: chavePublica })
+                                    .then((currentToken) => {
+                                                  if (currentToken) {
+                                                                console.log("Seu Token:", currentToken);
+                                                                            alert("Notificações Ativadas! Token no console.");
+                                                  } else {
+                                                                console.log("Nenhum token disponível.");
+                                                  }
+                                    }).catch((err) => {
+                                                  console.log("Erro ao pegar token:", err);
+                                    });
+            } else {
+                      console.log("Permissão negada.");
+            }
+      });
+};
+
+            }
+                                    })
+                                                  }
+                                                  }
+                                    })
+            }
+      })
+}
+}
