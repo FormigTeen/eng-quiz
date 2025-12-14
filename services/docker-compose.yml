@@ -82,9 +82,13 @@ services:
       DATABASE_NAME: ${CONTENT_DB_NAME:-strapi}
       DATABASE_USERNAME: ${CONTENT_DB_USER:-strapi}
       DATABASE_PASSWORD: ${CONTENT_DB_PASSWORD:-strapi}
+      # Secrets from services/.env
       JWT_SECRET: ${CONTENT_JWT_SECRET:-change-me-jwt}
       ADMIN_JWT_SECRET: ${CONTENT_ADMIN_JWT_SECRET:-change-me-admin-jwt}
       APP_KEYS: ${CONTENT_APP_KEYS:-key1,key2,key3}
+      API_TOKEN_SALT: ${CONTENT_API_TOKEN_SALT:-change-me-api-token-salt}
+      TRANSFER_TOKEN_SALT: ${CONTENT_TRANSFER_TOKEN_SALT:-change-me-transfer-token-salt}
+      ENCRYPTION_KEY: ${CONTENT_ENCRYPTION_KEY:-change-me-encryption-key}
     ports:
       - "1337:1337"
     volumes:
