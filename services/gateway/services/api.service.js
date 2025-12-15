@@ -41,9 +41,22 @@ module.exports = {
                     "gateway.content.v1.getQuiz",
                     "gateway.engine.v1.quizRandom",
                     "gateway.engine.v1.track",
-                    "gateway.engine.v1.pick"
+                    "gateway.engine.v1.pick",
+                    "gateway.payment.v1.createPayment",
+                    "gateway.payment.v1.getPaymentStatus",
+                    "gateway.payment.v1.listPayments",
+                    "gateway.payment.v1.webhook"
                 ],
-                use: [],
+                use: [
+                  // Middleware para passar headers do webhook
+                  (req, res, next) => {
+                    if (req.$route && req.$route.path === "/payment/v1/webhook") {
+                      // Armazenar headers no req para acesso posterior
+                      req.webhookHeaders = req.headers;
+                    }
+                    next();
+                  }
+                ],
                 mergeParams: true,
                 authentication: true,
                 authorization: false,
@@ -65,7 +78,11 @@ module.exports = {
                     "GET content/v1/quiz/:id": "gateway.content.v1.getQuiz",
                     "GET engine/v1/quiz/random": "gateway.engine.v1.quizRandom",
                     "POST engine/v1/track": "gateway.engine.v1.track",
-                    "POST engine/v1/pick": "gateway.engine.v1.pick"
+                    "POST engine/v1/pick": "gateway.engine.v1.pick",
+                    "POST payment/v1/create": "gateway.payment.v1.createPayment",
+                    "GET payment/v1/status/:id": "gateway.payment.v1.getPaymentStatus",
+                    "GET payment/v1/list": "gateway.payment.v1.listPayments",
+                    "POST payment/v1/webhook": "gateway.payment.v1.webhook"
                 },
                 callOptions: {},
                 bodyParsers: {
