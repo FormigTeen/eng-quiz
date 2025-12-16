@@ -268,7 +268,6 @@ const Quiz: React.FC = () => {
           }}>
             <div className="countdown-circle">
               <span>{countdown}</span>
-              <small>s</small>
             </div>
             <div className="countdown-text" style={{ textAlign: 'center', marginTop: 20 }}>
               <h2>Prepare-se!</h2>
@@ -307,27 +306,56 @@ const Quiz: React.FC = () => {
             <div className="options-list">
               {currentQ?.options?.map((opt, index) => {
                 let statusClass = '';
+                const isCorrectAnswer = index === currentQ.correctIndex;
+                const isSelected = selectedOption === index;
 
-                // Lógica de Cores (Só aparece se já respondeu: isChecked = true)
+                // Lógica das Classes CSS (para ícones e background)
                 if (isChecked) {
-                  const correctIndex = currentQ.correctIndex;
-                  if (index === correctIndex) statusClass = 'correct'; // Fica Verde
-                  else if (index === selectedOption && index !== correctIndex) statusClass = 'wrong'; // Fica Vermelho
+                  if (isCorrectAnswer) statusClass = 'correct';
+                  else if (isSelected && !isCorrectAnswer) statusClass = 'wrong';
+                }
+
+                // LÓGICA DAS CORES (Prioridade: Correto/Errado > Cor do Time)
+                let finalBorderColor = 'transparent';
+                let finalBoxShadow = '';
+
+                if (isChecked) {
+                  if (statusClass === 'correct') {
+                    finalBorderColor = '#2dd36f'; // Verde (Sucesso)
+                    finalBoxShadow = '0 0 15px rgba(45, 211, 111, 0.4)';
+                  } else if (statusClass === 'wrong') {
+                    finalBorderColor = '#eb445a'; // Vermelho (Erro)
+                    finalBoxShadow = '0 0 15px rgba(235, 68, 90, 0.4)';
+                  } else if (isSelected) {
+                    // Caso raro onde está selecionado mas não caiu nas lógicas acima
+                    finalBorderColor = themeColor;
+                  }
+                } else {
+                  // Ainda não respondeu, mas selecionou (efeito de hover/active)
+                  if (isSelected) {
+                    finalBorderColor = themeColor;
+                    finalBoxShadow = `0 0 10px ${themeColor}`;
+                  }
                 }
 
                 return (
                   <div
                     key={index}
-                    className={`option-btn ${statusClass} ${selectedOption === index ? 'selected' : ''}`}
+                    className={`option-btn ${statusClass} ${isSelected ? 'selected' : ''}`}
                     onClick={() => handleAnswer(index)}
                     style={{
-                      // SE este botão estiver selecionado, usa a cor do time. Senão, branco padrão.
-                      borderColor: selectedOption === index ? themeColor : 'transparent',
-                      backgroundColor: selectedOption === index ? 'rgba(255,255,255,0.1)' : '',
-                      boxShadow: selectedOption === index ? `0 0 10px ${themeColor}` : ''
+                      borderColor: finalBorderColor,
+                      boxShadow: finalBoxShadow,
+                      // Se estiver errado, o fundo fica levemente vermelho, se não, usa lógica padrão
+                      backgroundColor: (statusClass === 'wrong' && isSelected) ? 'rgba(235, 68, 90, 0.1)' :
+                        (isSelected ? 'rgba(255,255,255,0.05)' : '')
                     }}
                   >
-                    {/* ... */}
+                    <span>{opt.text}</span>
+
+                    {/* Ícones */}
+                    {statusClass === 'correct' && <IonIcon icon={checkmarkCircleOutline} style={{ color: '#2dd36f' }} />}
+                    {statusClass === 'wrong' && <IonIcon icon={closeCircleOutline} style={{ color: '#eb445a' }} />}
                   </div>
                 )
               })}
