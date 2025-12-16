@@ -1,8 +1,8 @@
-# Documentação: Abstrações SOLID - Fase 1
+# Documentação: Abstrações SOLID
 
 ## Visão Geral
 
-Este documento descreve as abstrações criadas no projeto eng-quiz. As abstrações foram implementadas para seguir os princípios SOLID, especialmente o **Dependency Inversion Principle (DIP)** e o **Single Responsibility Principle (SRP)**.
+Este documento descreve as abstrações e padrões SOLID implementados no projeto eng-quiz. As abstrações foram implementadas para seguir os princípios SOLID, especialmente o **Dependency Inversion Principle (DIP)** e o **Single Responsibility Principle (SRP)**.
 
 ---
 
@@ -271,33 +271,7 @@ const result = await httpClient.post<LoginResponse>('/auth/v1/login', data);
 
 ---
 
-## Benefícios Gerais da Fase 1
-
-### 1. Testabilidade
-- Interfaces permitem criar mocks facilmente
-- Testes unitários podem usar implementações fake
-- Testes de integração podem usar implementações reais
-
-### 2. Flexibilidade
-- Troca de implementações sem modificar código de negócio
-- Exemplo: trocar Nodemailer por SendGrid apenas mudando a instância
-- Exemplo: trocar Redis por Memcached apenas mudando o provider
-
-### 3. Manutenibilidade
-- Código mais limpo e organizado
-- Responsabilidades bem definidas
-- Fácil adicionar novas funcionalidades
-
-### 4. Escalabilidade
-- Novos provedores podem ser adicionados facilmente
-- Suporte a múltiplas implementações simultâneas
-- Preparado para arquitetura de microserviços
-
----
-
 ## Pontos do Projeto que Já Seguem SOLID
-
-Antes da refatoração da Fase 1, o projeto já apresentava várias implementações que seguem os princípios SOLID. Esta seção documenta essas boas práticas existentes.
 
 ### 1. Arquitetura de Microserviços (SRP)
 
@@ -308,9 +282,10 @@ Antes da refatoração da Fase 1, o projeto já apresentava várias implementaç
 **Descrição:**
 O projeto está organizado em microserviços independentes, cada um com responsabilidade única:
 - `auth` - Autenticação e gerenciamento de usuários
-- `content` - Gerenciamento de quizzes e conteúdo
+- `content` - Gerenciamento de quizzes e conteúdo (Strapi CMS)
 - `engine` - Lógica de jogo e pontuação
 - `gateway` - API Gateway e roteamento
+- `payment` - Processamento de pagamentos (AbacatePay)
 - `ws` - WebSocket e comunicação em tempo real
 
 **Benefícios:**
@@ -396,7 +371,9 @@ module.exports = function(collection) {
 **Descrição:**
 Os serviços do gateway atuam como proxies/facades, com responsabilidade única de rotear requisições HTTP para os serviços internos. Cada serviço do gateway expõe apenas as ações necessárias para seu domínio.
 
-**Exemplo:**
+**Exemplos:**
+
+**Auth Gateway:**
 ```javascript
 // services/gateway/services/v1/auth.service.js
 module.exports = {
@@ -419,10 +396,229 @@ module.exports = {
 };
 ```
 
+**Payment Gateway:**
+```javascript
+// services/gateway/services/v1/payment.service.js
+module.exports = {
+  name: "gateway.payment.v1",  // Responsabilidade única: proxy de pagamento
+  actions: {
+    createPayment: {
+      auth: "required",
+      async handler(ctx) {
+        const user = ctx.meta.user;
+        return ctx.call("payment.createPayment", {
+          userId: user.email,
+          packageId: ctx.params.packageId,
+          amount: ctx.params.amount,
+          coins: ctx.params.coins
+        });
+      }
+    },
+    getPaymentStatus: { ... },
+    webhook: { ... }
+    // Apenas ações relacionadas a pagamento
+  }
+};
+```
+
 **Benefícios:**
 - ✅ **SRP**: Cada gateway service tem responsabilidade única de proxy para um domínio
 - ✅ **ISP**: Cada serviço expõe apenas as ações necessárias para seu domínio
 - ✅ Separação clara entre camada de API e camada de negócio
+- ✅ Consistência: Todos os gateway services seguem o mesmo padrão (auth, content, engine, payment)
+
+---
+
+## Padrões SOLID Identificados 
+
+### 8. Lazy Loading Pattern no Payment Service (DIP)
+
+**Localização:** `services/payment/services/payment.service.js`
+
+**Princípio:** Dependency Inversion Principle (DIP)
+
+**Descrição:**
+O serviço de pagamento implementa lazy loading para o módulo AbacatePay, carregando-o apenas quando necessário e quando a API key está configurada. Isso permite que o serviço funcione mesmo sem o SDK instalado (modo simulado).
+
+**Implementação:**
+```javascript
+// Importar AbacatePay apenas se necessário (lazy loading)
+let AbacatePay = null;
+function getAbacatePayModule() {
+  if (!AbacatePay && process.env.ABACATE_PAY_API_KEY) {
+    try {
+      AbacatePay = require("abacatepay-nodejs-sdk");
+    } catch (err) {
+      console.warn("Failed to load abacatepay-nodejs-sdk:", err.message);
+    }
+  }
+  return AbacatePay;
+}
+
+getAbacatePayClient() {
+  const apiKey = process.env.ABACATE_PAY_API_KEY;
+  if (!apiKey) {
+    throw new Error("ABACATE_PAY_API_KEY not configured");
+  }
+  
+  const AbacatePayModule = getAbacatePayModule();
+  // Tenta diferentes formas de usar a biblioteca
+  if (typeof AbacatePayModule === "function") {
+    return AbacatePayModule(apiKey);
+  } else if (AbacatePayModule.default && typeof AbacatePayModule.default === "function") {
+    return AbacatePayModule.default(apiKey);
+  } else if (AbacatePayModule.createClient) {
+    return AbacatePayModule.createClient(apiKey);
+  }
+}
+```
+
+**Benefícios SOLID:**
+- ✅ **DIP**: O serviço não depende diretamente do módulo AbacatePay no momento da inicialização
+- ✅ **OCP**: Permite adicionar novos formatos de SDK sem modificar a lógica principal
+- ✅ **SRP**: A responsabilidade de carregar o módulo está isolada
+- ✅ **Flexibilidade**: O serviço pode funcionar em modo simulado sem o SDK instalado
+
+**Oportunidade de Melhoria:**
+Este padrão poderia ser abstraído em um `PaymentProvider` seguindo o mesmo padrão dos outros providers (EmailProvider, CacheProvider), permitindo trocar AbacatePay por outro gateway de pagamento.
+
+---
+
+### 9. Strategy Pattern Implícito - Modo Simulado vs Real (OCP, DIP)
+
+**Localização:** `services/payment/services/payment.service.js`
+
+**Princípios:** Open/Closed Principle (OCP) e Dependency Inversion Principle (DIP)
+
+**Descrição:**
+O serviço de pagamento implementa um padrão Strategy implícito, alternando entre modo simulado e modo real baseado na configuração. O modo é determinado pela presença da `ABACATE_PAY_API_KEY`.
+
+**Implementação:**
+```javascript
+methods: {
+  isSimulatedMode() {
+    return !process.env.ABACATE_PAY_API_KEY;
+  },
+  
+  // No handler createPayment:
+  const isSimulated = this.isSimulatedMode();
+  
+  if (isSimulated) {
+    // Modo simulado: criar pagamento sem AbacatePay
+    // Gera QR Code e PIX Code simulados usando QRCode e crypto
+    const qrCode = await this.generateSimulatedQRCode(paymentId);
+    const pixCode = this.generateSimulatedPixCode(paymentId);
+  } else {
+    // Modo real: usar AbacatePay
+    const abacate = this.getAbacatePayClient();
+    const billing = await abacate.billing.create({ ... });
+  }
+}
+```
+
+**Benefícios SOLID:**
+- ✅ **OCP**: O código está aberto para extensão (novos modos podem ser adicionados) mas fechado para modificação
+- ✅ **DIP**: A lógica de negócio não depende diretamente de implementações concretas
+- ✅ **SRP**: Cada modo tem responsabilidade única
+- ✅ **Testabilidade**: Facilita testes sem necessidade de integração com gateway real
+
+**Oportunidade de Melhoria:**
+Este padrão poderia ser formalizado criando uma abstração `PaymentStrategy`:
+```javascript
+class PaymentStrategy {
+  async createPayment(params) { ... }
+  async processWebhook(payload) { ... }
+}
+
+class SimulatedPaymentStrategy extends PaymentStrategy { ... }
+class AbacatePayStrategy extends PaymentStrategy { ... }
+```
+
+---
+
+### 10. Idempotency Pattern no Payment Service (SRP)
+
+**Localização:** `services/payment/services/payment.service.js`
+
+**Princípio:** Single Responsibility Principle (SRP)
+
+**Descrição:**
+O serviço implementa um padrão de idempotência usando Redis para garantir que operações críticas (criação de pagamento, processamento de webhook, crédito de moedas) não sejam executadas múltiplas vezes.
+
+**Implementação:**
+```javascript
+methods: {
+  async checkIdempotency(key) {
+    if (!this.redis) return false;
+    try {
+      const exists = await this.redis.get(key);
+      return exists !== null;
+    } catch (err) {
+      this.logger.warn("Redis idempotency check failed", err?.message);
+      return false;
+    }
+  },
+
+  async setIdempotency(key, ttl = 86400) {
+    if (!this.redis) return;
+    try {
+      await this.redis.set(key, "1", "EX", ttl);
+    } catch (err) {
+      this.logger.warn("Redis idempotency set failed", err?.message);
+    }
+  }
+}
+
+// Uso no processWebhook:
+const idempotencyKey = `payment:webhook:${billingId}`;
+if (await this.checkIdempotency(idempotencyKey)) {
+  this.logger.info("Webhook already processed", { billingId });
+  return { success: true, message: "Webhook já processado" };
+}
+await this.setIdempotency(idempotencyKey, 86400);
+```
+
+**Benefícios SOLID:**
+- ✅ **SRP**: A responsabilidade de idempotência está isolada em métodos específicos
+- ✅ **Reutilização**: Os métodos podem ser usados em diferentes contextos
+- ✅ **Resiliência**: Previne execução duplicada de operações críticas
+- ✅ **Testabilidade**: Métodos isolados facilitam testes
+
+**Oportunidade de Melhoria:**
+A lógica de idempotência poderia ser abstraída usando o `CacheProvider` existente, seguindo o padrão já estabelecido no projeto.
+
+---
+
+### 11. Strapi Factory Pattern (DIP)
+
+**Localização:** `services/content/src/api/*/services/*.ts` e `services/content/src/api/*/controllers/*.ts`
+
+**Princípio:** Dependency Inversion Principle (DIP)
+
+**Descrição:**
+O serviço de conteúdo (Strapi) usa o padrão Factory do framework para criar controllers e services. Isso segue o DIP ao depender de abstrações (`factories`) em vez de implementações concretas.
+
+**Implementação:**
+```typescript
+// services/content/src/api/pergunta/services/pergunta.ts
+import { factories } from '@strapi/strapi';
+
+export default factories.createCoreService('api::pergunta.pergunta');
+
+// services/content/src/api/pergunta/controllers/pergunta.ts
+import { factories } from '@strapi/strapi';
+
+export default factories.createCoreController('api::pergunta.pergunta');
+```
+
+**Benefícios SOLID:**
+- ✅ **DIP**: Depende de abstrações (`factories`) do framework, não de implementações concretas
+- ✅ **OCP**: Novos content types podem ser criados sem modificar código existente
+- ✅ **Consistência**: Segue padrões estabelecidos do Strapi
+- ✅ **Manutenibilidade**: Código mais limpo e padronizado
+
+**Observação:**
+Este é um padrão do framework Strapi, não uma implementação customizada. No entanto, demonstra o uso correto de DIP ao depender de abstrações fornecidas pelo framework.
 
 ---
 
@@ -582,28 +778,11 @@ async handler(ctx) {
 
 | Princípio | Onde Está Aplicado | Exemplo |
 |-----------|-------------------|---------|
-| **SRP** | Microserviços, Mixins, Gateway Services, Hooks | Cada serviço tem responsabilidade única |
-| **OCP** | Mixins com adapters | Novos adapters podem ser adicionados sem modificar código |
+| **SRP** | Microserviços, Mixins, Gateway Services, Hooks, Idempotency | Cada serviço tem responsabilidade única |
+| **OCP** | Mixins com adapters, Payment Strategy | Novos adapters/estratégias podem ser adicionados sem modificar código |
 | **LSP** | Adapters de banco de dados | MongoDB, NeDB, Memory adapters são substituíveis |
 | **ISP** | Gateway Services, Hooks | Cada serviço/hook expõe apenas o necessário |
-| **DIP** | Context API, Mixins com adapters | Dependências de abstrações, não implementações |
-
----
-
-## Próximos Passos (Fases 2 e 3)
-
-### Fase 2: Refatoração do Auth Service
-- Criar `PasswordService` para hash de senhas
-- Criar `TokenService` para JWT e blacklist
-- Criar `EmailService` usando `EmailProvider`
-- Criar `SequenceService` para lógica de sequência
-- Refatorar `auth.service.js` para usar os novos serviços
-
-### Fase 3: Refatoração do Quiz Component
-- Criar hook `useQuizGame` para lógica de jogo
-- Criar hook `useQuizAPI` para chamadas HTTP
-- Criar componentes de tela separados
-- Refatorar `Quiz.tsx` para usar hooks e componentes
+| **DIP** | Context API, Mixins com adapters, Lazy Loading, Strapi Factories | Dependências de abstrações, não implementações |
 
 ---
 
@@ -625,6 +804,35 @@ services/
     └── services/
         └── cache.provider.js
 
+services/
+└── payment/
+    └── services/
+        └── payment.service.js (com lazy loading e strategy pattern)
+
+services/
+└── content/ (Strapi)
+    └── src/
+        └── api/
+            ├── pergunta/
+            │   ├── services/
+            │   │   └── pergunta.ts (usa factories)
+            │   └── controllers/
+            │       └── pergunta.ts (usa factories)
+            └── equipe/
+                ├── services/
+                │   └── equipe.ts (usa factories)
+                └── controllers/
+                    └── equipe.ts (usa factories)
+
+services/
+└── gateway/
+    └── services/
+        └── v1/
+            ├── auth.service.js
+            ├── content.service.js
+            ├── engine.service.js
+            └── payment.service.js
+
 client/quiz/src/api/
 ├── http-client.interface.ts
 ├── fetch-client.ts
@@ -632,11 +840,4 @@ client/quiz/src/api/
 ```
 
 ---
-
-## Conclusão
-
-A Fase 1 estabeleceu as bases para a refatoração SOLID do projeto. As abstrações criadas seguem todos os princípios SOLID e preparam o código para as próximas fases de refatoração, onde os serviços serão divididos em responsabilidades menores e mais específicas.
-
-**Status:** ✅ Fase 1 Concluída  
-**Próxima Fase:** Fase 2 - Refatoração do Auth Service
 

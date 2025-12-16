@@ -8,8 +8,11 @@ Este projeto é uma aplicação completa de Quiz de Futebol, composta por uma ar
 - *Node.js* com framework *Moleculer JS*
 - *Docker* & *Docker Compose* (Orquestração)
 - *MongoDB* (Banco de Dados)
+- *PostgreSQL* (Banco de Dados do Strapi)
 - *Redis* (Cache)
 - *NATS* (Mensageria entre serviços)
+- *Strapi* 5 (CMS para gerenciamento de conteúdo)
+- *AbacatePay* (Gateway de pagamento PIX)
 
 ### Frontend (Mobile)
 - *Ionic Framework* 7
@@ -109,6 +112,32 @@ SMTP_FROM=msformigteen@gmail.com
 
 # Porta do Gateway
 PORT=3000
+
+# Configurações do Serviço de Pagamento (AbacatePay)
+# IMPORTANTE: Configure estas variáveis para habilitar pagamentos reais
+# Sem ABACATE_PAY_API_KEY, o serviço funcionará em modo simulado
+ABACATE_PAY_API_KEY=
+ABACATE_PAY_WEBHOOK_SECRET=
+ABACATE_PAY_WEBHOOK_URL=http://seu-dominio.com/api/payment/v1/webhook
+ABACATE_PAY_RETURN_URL=http://seu-dominio.com/app/shop
+ABACATE_PAY_COMPLETION_URL=http://seu-dominio.com/app/shop/success
+
+# Configurações do Strapi (Content Service)
+# IMPORTANTE: Configure estas variáveis para segurança em produção
+CONTENT_DB_NAME=strapi
+CONTENT_DB_USER=strapi
+CONTENT_DB_PASSWORD=strapi
+CONTENT_JWT_SECRET=change-me-jwt
+CONTENT_ADMIN_JWT_SECRET=change-me-admin-jwt
+CONTENT_APP_KEYS=key1,key2,key3
+CONTENT_API_TOKEN_SALT=change-me-api-token-salt
+CONTENT_TRANSFER_TOKEN_SALT=change-me-transfer-token-salt
+CONTENT_ENCRYPTION_KEY=change-me-encryption-key
+
+# Integração com Strapi (para outros serviços)
+# Configure após criar o API Token no painel admin do Strapi
+STRAPI_URL=http://content:1337
+STRAPI_API_TOKEN=
 ```
 
 ### 3. Instalar Dependências do Frontend
@@ -165,7 +194,7 @@ docker compose up -d --build
 
 Este comando irá:
 - Construir as imagens Docker de todos os microserviços
-- Subir os containers: MongoDB, Redis, NATS, Gateway, Auth, Content, Engine, WS, Ping e Pong
+- Subir os containers: MongoDB, PostgreSQL, Redis, NATS, Gateway, Auth, Content (Strapi), Payment, Engine, WS, Ping e Pong
 - Criar a rede `eng-quiz-net` para comunicação entre serviços
 
 4. **Verificar se os serviços estão rodando**:
@@ -190,6 +219,25 @@ curl http://localhost:3000/api/ping/v1/trigger
 # Ou abra no navegador
 # http://localhost:3000/api/ping/v1/trigger
 ```
+
+6. **Configurar o Strapi (Content Service)**:
+
+Após iniciar os serviços, acesse o painel administrativo do Strapi:
+
+```bash
+# Acesse no navegador
+http://localhost:1337/admin
+```
+
+**Primeira execução**: Crie uma conta de administrador no primeiro acesso.
+
+**Configurar Permissões**:
+1. Vá em **Settings** → **Users & Permissions plugin** → **Roles** → **Public**
+2. Configure as permissões de leitura para os content types necessários
+3. Crie um **API Token** em **Settings** → **API Tokens**
+4. Copie o token e adicione ao arquivo `.env` como `STRAPI_API_TOKEN`
+
+Para mais detalhes, consulte `services/content/PERMISSIONS.md`
 
 ### Frontend (Aplicativo Mobile)
 
@@ -285,7 +333,10 @@ docker compose logs -f
 # Ver logs de um serviço específico
 docker compose logs -f gateway
 docker compose logs -f auth
+docker compose logs -f payment
+docker compose logs -f content
 docker compose logs -f mongodb
+docker compose logs -f contentdb
 
 # Reiniciar um serviço específico
 docker compose restart gateway
@@ -362,6 +413,22 @@ docker system prune -a
 - Delete `node_modules` e `package-lock.json`
 - Execute `npm install` novamente
 
+### Problema: Strapi não inicia ou erro de conexão com PostgreSQL
+
+**Solução**: 
+- Verifique se o container `contentdb` está rodando: `docker compose ps`
+- Verifique os logs: `docker compose logs contentdb`
+- Verifique as variáveis de ambiente do Strapi no `docker-compose.yml`
+- Certifique-se de que as variáveis `CONTENT_*` estão configuradas no `.env`
+
+### Problema: Serviço de pagamento não funciona
+
+**Solução**: 
+- Verifique se `ABACATE_PAY_API_KEY` está configurada no `.env`
+- Sem a API key, o serviço funcionará apenas em modo simulado
+- Verifique os logs: `docker compose logs payment`
+- Certifique-se de que o MongoDB e Redis estão rodando (dependências do serviço)
+
 ---
 
 ## 📁 Estrutura do Projeto
@@ -375,9 +442,10 @@ eng-quiz/
 │       └── package.json
 ├── services/              # Backend (Microserviços)
 │   ├── auth/              # Serviço de autenticação
-│   ├── content/           # Serviço de conteúdo
+│   ├── content/           # Serviço de conteúdo (Strapi CMS)
 │   ├── engine/            # Serviço de engine do quiz
 │   ├── gateway/           # API Gateway
+│   ├── payment/            # Serviço de pagamento (AbacatePay)
 │   ├── ping/              # Serviço ping
 │   ├── pong/              # Serviço pong
 │   ├── ws/                # Serviço WebSocket
@@ -402,6 +470,18 @@ eng-quiz/
    - Backup do banco de dados
 
 4. **Performance**: O Redis é usado para cache. Certifique-se de que está configurado corretamente para melhor performance.
+
+5. **Strapi (Content Service)**: 
+   - O Strapi está disponível em `http://localhost:1337`
+   - O painel admin está em `http://localhost:1337/admin`
+   - Configure as permissões e crie um API Token após o primeiro acesso
+   - Consulte `services/content/PERMISSIONS.md` para detalhes de configuração
+
+6. **Serviço de Pagamento**: 
+   - O serviço de pagamento usa AbacatePay para processar pagamentos PIX
+   - Sem `ABACATE_PAY_API_KEY`, o serviço funcionará em modo simulado (apenas para desenvolvimento)
+   - Configure as variáveis de ambiente relacionadas ao AbacatePay para produção
+   - O serviço suporta webhooks para notificações de pagamento
 
 ---
 
@@ -431,4 +511,6 @@ Este projeto está sob a licença [MIT](LICENSE).
 
 - Moleculer JS pela excelente framework de microserviços
 - Ionic Framework pela plataforma mobile híbrida
+- Strapi pelo CMS open source
+- AbacatePay pelo gateway de pagamento
 - Comunidade open source
