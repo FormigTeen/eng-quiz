@@ -47,7 +47,6 @@ const Shop: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
-// AI_GENERATED_CODE_END
 
   // Lista de Pacotes de Moedas
   const packages = [
@@ -327,6 +326,37 @@ const Shop: React.FC = () => {
                   </div>
                   <IonButton onClick={copyPixCode} fill="outline" size="small">
                     Copiar Código
+                  </IonButton>
+                </div>
+              )}
+
+              {/* Botão de fallback para copiar URL diretamente */}
+              {paymentData && paymentData.paymentId && (
+                <div style={{ margin: '20px 0' }}>
+                  <p style={{ fontSize: '12px', color: '#666', marginBottom: '10px' }}>
+                    Ou acesse diretamente a página de confirmação:
+                  </p>
+                  <IonButton 
+                    fill="outline" 
+                    size="small"
+                    onClick={() => {
+                      const url = `${window.location.origin}/payment/confirm/${paymentData.paymentId}`;
+                      navigator.clipboard.writeText(url).then(() => {
+                        alert('URL copiada! Cole no navegador para confirmar o pagamento.');
+                      }).catch(() => {
+                        // Fallback se clipboard não funcionar
+                        const textArea = document.createElement('textarea');
+                        textArea.value = url;
+                        document.body.appendChild(textArea);
+                        textArea.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(textArea);
+                        alert('URL copiada! Cole no navegador para confirmar o pagamento.');
+                      });
+                    }}
+                  >
+                    <IonIcon icon={walletOutline} slot="start" />
+                    Copiar URL de Confirmação
                   </IonButton>
                 </div>
               )}
