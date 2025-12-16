@@ -415,6 +415,116 @@ module.exports = {
           return { success: false, error: "Erro ao processar solicitação" };
         }
       }
+    },
+
+    creditWallet: {
+      params: {
+        email: { type: "string" },
+        coins: { type: "number", min: 1 },
+        transactionId: { type: "string" }
+      },
+      async handler(ctx) {
+        const schema = yup.object({
+          email: yup.string().email().required(),
+          coins: yup.number().integer().positive().required(),
+          transactionId: yup.string().required()
+        });
+
+        try {
+          await schema.validate(ctx.params, { abortEarly: false, stripUnknown: true });
+        } catch (e) {
+          const { MoleculerClientError } = require("moleculer").Errors;
+          throw new MoleculerClientError("Parâmetros inválidos", 400, "INVALID_PARAMS", e.errors);
+        }
+
+        const email = String(ctx.params.email).trim().toLowerCase();
+        const coins = Number(ctx.params.coins);
+        const transactionId = String(ctx.params.transactionId);
+
+        // Verificar idempotência com Redis
+        if (this.redis) {
+          const idempotencyKey = `payment:credit:${transactionId}`;
+          try {
+            const exists = await this.redis.get(idempotencyKey);
+            if (exists) {
+              this.logger.info("Credit already processed", { transactionId, email });
+              // Retornar saldo atual mesmo que já tenha sido creditado
+              const user = await this.adapter.collection.findOne({ email });
+              if (user && user.wallet) {
+                return {
+                  success: true,
+                  message: "Moedas já foram creditadas anteriormente",
+                  newBalance: user.wallet.credits || 0
+                };
+              }
+            }
+          } catch (err) {
+            this.logger.warn("Redis idempotency check failed", err?.message);
+          }
+        }
+
+        const col = this.adapter.collection;
+        const user = await col.findOne({ email });
+
+        if (!user) {
+          const { MoleculerClientError } = require("moleculer").Errors;
+          throw new MoleculerClientError("Usuário não encontrado", 404, "USER_NOT_FOUND");
+        }
+
+        // Garantir que wallet existe
+        if (!user.wallet) {
+          await col.updateOne(
+            { _id: user._id },
+            { $set: { wallet: { count: 0, credits: 0 } } }
+          );
+        }
+
+        // Atualizar créditos
+        try {
+          const result = await col.updateOne(
+            { _id: user._id },
+            { $inc: { "wallet.credits": coins } }
+          );
+
+          if (result.modifiedCount === 0) {
+            this.logger.warn("No user updated", { email, transactionId });
+          }
+
+          // Marcar idempotência
+          if (this.redis) {
+            const idempotencyKey = `payment:credit:${transactionId}`;
+            try {
+              await this.redis.set(idempotencyKey, "1", "EX", 86400); // 24 horas
+            } catch (err) {
+              this.logger.warn("Failed to set idempotency key", err?.message);
+            }
+          }
+
+          // Buscar saldo atualizado
+          const updatedUser = await col.findOne({ _id: user._id });
+          const newBalance = updatedUser?.wallet?.credits || 0;
+
+          // Emitir evento de crédito realizado
+          ctx.emit("payment.credited", {
+            email,
+            coins,
+            transactionId,
+            newBalance
+          });
+
+          this.logger.info("Wallet credited", { email, coins, transactionId, newBalance });
+
+          return {
+            success: true,
+            message: "Moedas creditadas com sucesso",
+            newBalance
+          };
+        } catch (err) {
+          this.logger.error("Failed to credit wallet", { error: err?.message, email, transactionId });
+          const { MoleculerClientError } = require("moleculer").Errors;
+          throw new MoleculerClientError("Erro ao creditar moedas", 500, "CREDIT_FAILED", err?.message);
+        }
+      }
     }
   },
 

@@ -1,0 +1,21 @@
+{
+  "name": "payment",
+  "version": "1.0.0",
+  "description": "Payment microservice (Moleculer) with MongoDB + Abacate Pay integration",
+  "scripts": {
+    "dev": "moleculer-runner --repl --hot services/**/*.service.js",
+    "start": "moleculer-runner"
+  },
+  "dependencies": {
+    "abacatepay-nodejs-sdk": "^1.6.0",
+    "ioredis": "^5.4.1",
+    "moleculer": "^0.14.26",
+    "moleculer-db": "^0.8.29",
+    "moleculer-db-adapter-mongo": "^0.4.21",
+    "nats": "^2.7.1",
+    "yup": "^1.4.0"
+  },
+  "engines": {
+    "node": ">= 16.x.x"
+  }
+}

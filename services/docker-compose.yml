@@ -116,6 +116,16 @@ services:
     restart: unless-stopped
     command: [ "npm", "start", "--", "/app/services/*.service.js", "/app/services/**/*.service.js" ]
 
+  payment:
+    build: ./payment
+    env_file: .env
+    depends_on:
+      - nats
+      - mongodb
+      - redis
+    restart: unless-stopped
+    command: ["npm", "start", "--", "/app/services/*.service.js", "/app/services/**/*.service.js"]
+
 networks:
   default:
     name: eng-quiz-net
