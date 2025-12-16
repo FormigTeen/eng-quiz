@@ -36,7 +36,7 @@ const Home: React.FC = () => {
 
   // --- NOVO CÓDIGO: BUSCAR DADOS NO STRAPI ---
   useEffect(() => {
-    fetch('http://localhost:1337/api/testes')
+    fetch('http://localhost:1337/api/equipes')
       .then(response => response.json())
       .then(result => {
         // O Strapi retorna { data: [...] }

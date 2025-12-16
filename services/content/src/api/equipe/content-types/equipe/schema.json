@@ -1,10 +1,10 @@
 {
   "kind": "collectionType",
-  "collectionName": "testes",
+  "collectionName": "equipes",
   "info": {
-    "singularName": "teste",
-    "pluralName": "testes",
-    "displayName": "teste"
+    "singularName": "equipe",
+    "pluralName": "equipes",
+    "displayName": "Equipe"
   },
   "options": {
     "draftAndPublish": true
