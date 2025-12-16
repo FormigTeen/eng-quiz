@@ -1,0 +1,45 @@
+{
+  "kind": "collectionType",
+  "collectionName": "perguntas",
+  "info": {
+    "singularName": "pergunta",
+    "pluralName": "perguntas",
+    "displayName": "Pergunta"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "enunciado": {
+      "type": "text"
+    },
+    "opcaoA": {
+      "type": "string"
+    },
+    "opcaoB": {
+      "type": "string"
+    },
+    "opcaoC": {
+      "type": "string"
+    },
+    "opcaoD": {
+      "type": "string"
+    },
+    "respostaCorreta": {
+      "type": "enumeration",
+      "enum": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "equipe": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::equipe.equipe",
+      "inversedBy": "perguntas"
+    }
+  }
+}

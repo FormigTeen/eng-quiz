@@ -18,6 +18,8 @@ interface StrapiTeam {
   id: number;
   documentId: string;
   Nome: string;
+  imagem: string;
+  cor: string;
 }
 
 const Home: React.FC = () => {
@@ -142,11 +144,10 @@ const Home: React.FC = () => {
 
           {/* --- AQUI ESTÁ A INTEGRAÇÃO COM O STRAPI --- */}
           <div className="section-header mt-4">
-            <h3>Explorar Categorias</h3>
+            <h3>Explorar Equipes</h3>
             <p>Jogue com seu time</p>
             {/* <p>Times vindos do Strapi (Database)</p> */}
           </div>
-          <IonSearchbar placeholder="Buscar time, competição..." className="custom-search" />
 
           {loading ? (
             <div style={{ textAlign: 'center', padding: '20px' }}>
@@ -156,17 +157,41 @@ const Home: React.FC = () => {
           ) : (
             <IonGrid className="categories-grid">
               <IonRow>
-                {/* Loop nos dados que vieram do Strapi */}
-                {categories.map((item, index) => {
-                  const style = getCardStyle(index); // Pega uma cor aleatória
+                {categories.map((item) => {
+                  // Definir uma cor padrão caso não tenha no strapi
+                  const bgColor = item.cor || '#666';
+
                   return (
                     <IonCol size="6" key={item.id}>
-                      {/* Removi a classe 'is-disabled' para parecer ativo */}
-                      <div className={`category-card ${style.color}`}>
-                        {/* Se quiser mostrar o ID para testar: <div className="soon-tag">ID: {item.id}</div> */}
-                        <IonIcon icon={style.icon} />
+                      <div
+                        className="category-card"
+                        // MUDANÇA 1: Passamos a cor via State para o Quiz
+                        onClick={() => history.push({
+                          pathname: `/game/quiz/${item.documentId}`,
+                          state: { themeColor: bgColor, teamName: item.Nome }
+                        })}
+                        style={{
+                          cursor: 'pointer',
+                          // MUDANÇA 2: Gradiente usando a cor do banco
+                          background: `linear-gradient(135deg, ${bgColor} 0%, #1a1a1a 100%)`,
+                          border: `1px solid ${bgColor}`
+                        }}
+                      >
+                        {/* MUDANÇA 3: Se tiver imagem usa ela, senão usa ícone genérico */}
+                        {item.imagem ? (
+                          <img
+                            src={item.imagem}
+                            alt={item.Nome}
+                            style={{ width: '50px', height: '50px', objectFit: 'contain', marginBottom: '10px' }}
+                          />
+                        ) : (
+                          <IonIcon icon={globeOutline} />
+                        )}
+
                         <h4>{item.Nome}</h4>
-                        <span className="pill">10 perguntas</span>
+                        <span className="pill" style={{ color: '#fff', background: 'rgba(0,0,0,0.3)' }}>
+                          Jogar
+                        </span>
                       </div>
                     </IonCol>
                   );

@@ -13,6 +13,18 @@
   "attributes": {
     "Nome": {
       "type": "string"
+    },
+    "perguntas": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::pergunta.pergunta",
+      "mappedBy": "equipe"
+    },
+    "imagem": {
+      "type": "string"
+    },
+    "cor": {
+      "type": "string"
     }
   }
 }

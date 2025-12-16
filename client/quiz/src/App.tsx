@@ -98,6 +98,9 @@ const App: React.FC = () => (
 
         <Route exact path="/register" component={Register} />
 
+        {/* Rota para Quiz de um Time Específico (Recebe o ID) */}
+        <Route exact path="/game/quiz/:teamId" component={Quiz} />
+
         {/* Rota do Quiz */}
         <Route exact path="/game/quiz" component={Quiz} />
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   IonContent, IonPage, IonButton, IonIcon,
-  IonGrid, IonRow, IonCol, IonProgressBar, IonHeader, IonToolbar, IonButtons, IonBackButton
+  IonGrid, IonRow, IonCol, IonProgressBar, IonHeader, IonToolbar, IonButtons, IonBackButton, IonSpinner, IonTitle
 } from '@ionic/react';
 import {
   closeOutline, timeOutline, checkmarkCircleOutline,
@@ -9,23 +9,44 @@ import {
   statsChartOutline, flashOutline, arrowRedoOutline, homeOutline,
   globeOutline
 } from 'ionicons/icons';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useParams, useLocation } from 'react-router-dom'; // <--- ADICIONEI useParams
 import './Quiz.css';
-import { apiGet, apiPost } from '../api/client';
 import { useAuth } from '../hooks/useAuth';
 
+// --- TIPOS (Adaptados para o Strapi) ---
+
+// Tipo do dado puro que vem do Strapi
+type StrapiQuestion = {
+  id: number;
+  documentId: string;
+  enunciado: string;
+  opcaoA: string;
+  opcaoB: string;
+  opcaoC: string;
+  opcaoD: string;
+  respostaCorreta: 'A' | 'B' | 'C' | 'D';
+};
+
+// Tipo interno usado pelo seu layout (Mantive sua estrutura, adicionei o correctIndex)
 type EngineOption = { text: string };
-type EngineQuestion = { uuid: string; text: string; options: EngineOption[] };
-type RandomQuizResponse = { uuid: string; questions: EngineQuestion[] };
-type TrackResponse = { correct: string | null };
-type PickResponse = { positive: number; negative: number };
+type EngineQuestion = {
+  uuid: string;
+  text: string;
+  options: EngineOption[];
+  correctIndex: number; // Armazena qual o índice certo (0, 1, 2 ou 3)
+};
 
 const Quiz: React.FC = () => {
   const history = useHistory();
-  const { token } = useAuth();
+  const { teamId } = useParams<{ teamId: string }>(); // <--- PEGA O ID DO TIME
+  const { user } = useAuth(); // Mantive caso precise do user depois
 
-  // Estados do Jogo: 'intro' | 'countdown' | 'playing' | 'result'
-  const [gameState, setGameState] = useState<'intro' | 'countdown' | 'playing' | 'result'>('intro');
+  // Estados do Jogo
+  const [gameState, setGameState] = useState<'intro' | 'loading' | 'countdown' | 'playing' | 'result'>('intro');
+
+  const location = useLocation<{ themeColor?: string; teamName?: string }>();
+  const themeColor = location.state?.themeColor || '#428cff'; // Cor padrão (azul) se não vier nada
+  const themeName = location.state?.teamName;
 
   // Controle do Quiz
   const [currentQIndex, setCurrentQIndex] = useState(0);
@@ -33,28 +54,70 @@ const Quiz: React.FC = () => {
   const [isChecked, setIsChecked] = useState(false);
   const [score, setScore] = useState(0);
   const [correctCount, setCorrectCount] = useState(0);
-  const [quizUUID, setQuizUUID] = useState<string | null>(null);
   const [questions, setQuestions] = useState<EngineQuestion[]>([]);
-  const [currentCorrectText, setCurrentCorrectText] = useState<string | null>(null);
 
   // Timer
   const [timeLeft, setTimeLeft] = useState(15);
-  const [countdown, setCountdown] = useState(3); // Para a tela de preparação
+  const [countdown, setCountdown] = useState(3);
+
+  // --- FUNÇÃO AUXILIAR: EMBARALHAR PERGUNTAS ---
+  const shuffleArray = (array: any[]) => {
+    return array.sort(() => Math.random() - 0.5);
+  };
 
   // --- LÓGICA DO JOGO ---
 
-  // 1. Iniciar (Vai para contagem regressiva)
+  // 1. Iniciar (Busca no Strapi -> Converte -> Inicia Countdown)
   const startQuiz = async () => {
+    setGameState('loading'); // Mostra spinner enquanto busca
     try {
-      const res = await apiGet<RandomQuizResponse>('/engine/v1/quiz/random', token || undefined);
-      setQuizUUID(res.uuid);
-      setQuestions(res.questions || []);
-      if (!res.questions || res.questions.length === 0) {
-        // Não inicia se não houver perguntas
+      // Define a URL baseada se tem ID do time ou não
+      let url = 'http://localhost:1337/api/perguntas';
+
+      if (teamId) {
+        // Filtra pelo Time se tiver ID
+        url = `http://localhost:1337/api/perguntas?filters[equipe][documentId][$eq]=${teamId}`;
+      }
+
+      const response = await fetch(url);
+      const result = await response.json();
+
+      if (!result.data || result.data.length === 0) {
+        alert("Nenhuma pergunta encontrada para este tema ainda!");
+        setGameState('intro');
         return;
       }
+
+      // CONVERSÃO MÁGICA: Strapi -> Formato do seu Quiz
+      const loadedQuestions: EngineQuestion[] = result.data.map((q: StrapiQuestion) => {
+        // Mapeia letras A,B,C,D para índices 0,1,2,3
+        const mapAnswer: { [key: string]: number } = { 'A': 0, 'B': 1, 'C': 2, 'D': 3 };
+
+        return {
+          uuid: q.documentId,
+          text: q.enunciado,
+          options: [
+            { text: q.opcaoA },
+            { text: q.opcaoB },
+            { text: q.opcaoC },
+            { text: q.opcaoD }
+          ],
+          correctIndex: mapAnswer[q.respostaCorreta] // Guarda a resposta certa localmente
+        };
+      });
+
+      // Embaralha as perguntas para não ser sempre a mesma ordem
+      const randomizedQuestions = shuffleArray(loadedQuestions);
+
+      // Limita a 10 perguntas se tiver muitas (opcional)
+      const finalQuestions = randomizedQuestions.slice(0, 10);
+
+      setQuestions(finalQuestions);
+
+      // Inicia contagem regressiva
       setGameState('countdown');
       let count = 3;
+      setCountdown(3); // Garante reset visual
       const interval = setInterval(() => {
         count--;
         setCountdown(count);
@@ -63,8 +126,11 @@ const Quiz: React.FC = () => {
           setGameState('playing');
         }
       }, 1000);
+
     } catch (e) {
-      console.error(e);
+      console.error("Erro ao buscar do Strapi:", e);
+      alert("Erro de conexão com o servidor.");
+      setGameState('intro');
     }
   };
 
@@ -76,51 +142,34 @@ const Quiz: React.FC = () => {
         setTimeLeft((prev) => prev - 1);
       }, 1000);
     } else if (timeLeft === 0 && !isChecked) {
-      // Acabou o tempo: conta como erro e avança
-      handleAnswer(-1);
+      handleAnswer(-1); // Tempo esgotou
     }
     return () => clearInterval(timer);
   }, [gameState, timeLeft, isChecked]);
 
-  // 3. Responder
-  const handleAnswer = async (optionIndex: number) => {
+  // 3. Responder (Validação Local)
+  const handleAnswer = (optionIndex: number) => {
     if (isChecked) return; // Evita clique duplo
 
     setSelectedOption(optionIndex);
     setIsChecked(true);
-    const q = questions[currentQIndex];
-    try {
-      const chosenText = optionIndex >= 0 ? (q?.options?.[optionIndex]?.text || '') : '';
-      const track = await apiPost<TrackResponse>('/engine/v1/track', {
-        quiz_uuid: quizUUID,
-        question_uuid: q?.uuid,
-        answer: chosenText
-      }, token || undefined);
-      const correctText = track?.correct || null;
-      setCurrentCorrectText(correctText);
-      if (optionIndex >= 0 && correctText && chosenText === correctText) {
-        setScore(prev => prev + 100);
-        setCorrectCount(prev => prev + 1);
-      }
-    } catch (e) {
-      console.error(e);
+
+    const currentQ = questions[currentQIndex];
+    const isCorrect = optionIndex === currentQ.correctIndex;
+
+    // Atualiza pontuação
+    if (isCorrect) {
+      setScore(prev => prev + 100);
+      setCorrectCount(prev => prev + 1);
     }
 
-    // Espera 1.5s para mostrar a cor (verde/vermelho) e passa para a próxima
-    setTimeout(async () => {
+    // Espera 1.5s visualizando o acerto/erro e avança
+    setTimeout(() => {
       if (currentQIndex < (questions.length - 1)) {
         nextQuestion();
       } else {
         setGameState('result');
-        try {
-          if (quizUUID) {
-            const res = await apiPost<PickResponse>('/engine/v1/pick', { quiz_uuid: quizUUID }, token || undefined);
-            setCorrectCount(res.positive);
-            setScore(res.positive * 100);
-          }
-        } catch (e) {
-          console.error(e);
-        }
+        // Se quiser salvar o score no banco depois, faria um POST aqui
       }
     }, 1500);
   };
@@ -130,7 +179,6 @@ const Quiz: React.FC = () => {
     setSelectedOption(null);
     setIsChecked(false);
     setTimeLeft(15);
-    setCurrentCorrectText(null);
   };
 
   const resetGame = () => {
@@ -142,12 +190,10 @@ const Quiz: React.FC = () => {
     setCountdown(3);
     setIsChecked(false);
     setSelectedOption(null);
-    setQuizUUID(null);
     setQuestions([]);
-    setCurrentCorrectText(null);
   };
 
-  // --- RENDERIZAÇÃO DAS TELAS ---
+  // --- RENDERIZAÇÃO ---
 
   // TELA 1: INTRODUÇÃO
   if (gameState === 'intro') {
@@ -159,42 +205,53 @@ const Quiz: React.FC = () => {
               <IonIcon icon={closeOutline} />
             </IonButton>
             <div className="globe-icon">
-              <IonIcon icon={globeOutline} />
+              <IonIcon icon={teamId ? trophyOutline : globeOutline} />
             </div>
-            <h1>Geral</h1>
-            <p>Quiz de Conhecimentos</p>
+            <h1>{teamId ? 'Quiz do Time' : 'Jogo Rápido'}</h1>
+            <p>{teamId ? 'Mostre que sabe tudo!' : 'Perguntas Gerais'}</p>
           </div>
 
           <div className="intro-card-container">
             <div className="info-row">
-              <span>Total de Perguntas</span>
-              <strong>{(questions && questions.length > 0) ? questions.length : 5} questões</strong>
+              <span>Questões</span>
+              <strong>Aleatórias</strong>
             </div>
             <div className="info-row">
-              <span>Tempo por Pergunta</span>
-              <strong>15 segundos</strong>
+              <span>Tempo</span>
+              <strong>15s / pergunta</strong>
             </div>
             <div className="info-row">
-              <span>Pontos por Acerto</span>
-              <strong className="green-text">+100 pontos</strong>
+              <span>Prêmio</span>
+              <strong className="green-text">+100 pts</strong>
             </div>
 
             <div className="instructions-box">
-              <h4>Instruções:</h4>
+              <h4>Como jogar:</h4>
               <ul>
-                <li>• Responda todas as perguntas no tempo limite</li>
-                <li>• Cada resposta correta vale 100 pontos</li>
-                <li>• Não é possível voltar às perguntas anteriores</li>
-                <li>• Boa sorte! ⚽</li>
+                <li>• Selecione a alternativa correta</li>
+                <li>• Seja rápido para pontuar</li>
+                <li>• Divirta-se!</li>
               </ul>
             </div>
           </div>
 
           <div className="bottom-action">
             <IonButton expand="block" className="start-btn" onClick={startQuiz}>
-              Iniciar Quiz
+              COMEÇAR AGORA
             </IonButton>
           </div>
+        </IonContent>
+      </IonPage>
+    );
+  }
+
+  // TELA: CARREGANDO (Spinner)
+  if (gameState === 'loading') {
+    return (
+      <IonPage>
+        <IonContent fullscreen className="quiz-bg white-bg centered-content">
+          <IonSpinner name="crescent" color="primary" />
+          <p style={{ marginTop: 20 }}>Buscando perguntas...</p>
         </IonContent>
       </IonPage>
     );
@@ -205,15 +262,16 @@ const Quiz: React.FC = () => {
     return (
       <IonPage>
         <IonContent fullscreen className="quiz-bg white-bg">
-          {/* MUDANÇA: Criei essa DIV wrapper com a classe centered-content */}
-          <div className="centered-content">
+          <div style={{
+            display: 'flex', flexDirection: 'column',
+            justifyContent: 'center', alignItems: 'center', height: '100%'
+          }}>
             <div className="countdown-circle">
               <span>{countdown}</span>
-              <small>segundos</small>
+              <small>s</small>
             </div>
-            <div className="countdown-text">
+            <div className="countdown-text" style={{ textAlign: 'center', marginTop: 20 }}>
               <h2>Prepare-se!</h2>
-              <p>O quiz começará em instantes...</p>
             </div>
           </div>
         </IonContent>
@@ -231,32 +289,30 @@ const Quiz: React.FC = () => {
         <IonContent fullscreen className="quiz-bg gray-bg">
           <div className="game-header">
             <div className="top-bar">
-              <IonIcon icon={closeOutline} onClick={() => history.goBack()} />
-              <div className="q-badge">⚡ {currentQIndex + 1}/{questions.length || 5}</div>
+              <IonIcon icon={closeOutline} onClick={() => setGameState('result')} /> {/* Atalho para sair */}
+              <div className="q-badge">⚡ {currentQIndex + 1}/{questions.length}</div>
               <div className={`timer-badge ${timeLeft < 5 ? 'danger' : ''}`}>
                 <IonIcon icon={timeOutline} /> {timeLeft}s
               </div>
             </div>
 
-            {/* Barra de Progresso */}
             <div className="progress-container">
-              <small>Pergunta {currentQIndex + 1} de {questions.length || 5}</small>
               <IonProgressBar value={progress} color="dark" className="thin-progress"></IonProgressBar>
             </div>
 
-            {/* Pergunta */}
             <div className="question-card">
               <h3>{currentQ?.text}</h3>
             </div>
 
-            {/* Opções */}
             <div className="options-list">
               {currentQ?.options?.map((opt, index) => {
                 let statusClass = '';
+
+                // Lógica de Cores (Só aparece se já respondeu: isChecked = true)
                 if (isChecked) {
-                  const correctIndex = currentCorrectText && currentQ?.options ? currentQ.options.findIndex(o => o.text === currentCorrectText) : -1;
-                  if (index === correctIndex) statusClass = 'correct';
-                  else if (index === selectedOption && index !== correctIndex) statusClass = 'wrong';
+                  const correctIndex = currentQ.correctIndex;
+                  if (index === correctIndex) statusClass = 'correct'; // Fica Verde
+                  else if (index === selectedOption && index !== correctIndex) statusClass = 'wrong'; // Fica Vermelho
                 }
 
                 return (
@@ -264,10 +320,14 @@ const Quiz: React.FC = () => {
                     key={index}
                     className={`option-btn ${statusClass} ${selectedOption === index ? 'selected' : ''}`}
                     onClick={() => handleAnswer(index)}
+                    style={{
+                      // SE este botão estiver selecionado, usa a cor do time. Senão, branco padrão.
+                      borderColor: selectedOption === index ? themeColor : 'transparent',
+                      backgroundColor: selectedOption === index ? 'rgba(255,255,255,0.1)' : '',
+                      boxShadow: selectedOption === index ? `0 0 10px ${themeColor}` : ''
+                    }}
                   >
-                    <span>{opt.text}</span>
-                    {statusClass === 'correct' && <IonIcon icon={checkmarkCircleOutline} />}
-                    {statusClass === 'wrong' && <IonIcon icon={closeCircleOutline} />}
+                    {/* ... */}
                   </div>
                 )
               })}
@@ -283,59 +343,44 @@ const Quiz: React.FC = () => {
     <IonPage>
       <IonContent fullscreen className="quiz-bg white-bg">
         <div className="result-header">
-          <p>Sua Pontuação</p>
-          <h1>{score}</h1>
+          <p>Resultado Final</p>
+          <h1>{score} pts</h1>
           <div className="sub-result">
             <IonIcon icon={trophyOutline} />
-            <span>{correctCount} de {(questions && questions.length > 0) ? questions.length : 5} corretas</span>
+            <span>{correctCount} de {questions.length} acertos</span>
           </div>
         </div>
 
         <div className="result-stats">
           <IonGrid>
             <IonRow>
-              <IonCol size="4">
+              <IonCol size="6">
                 <div className="res-card">
                   <div className="icon-c green"><IonIcon icon={statsChartOutline} /></div>
                   <span>Precisão</span>
-                  <strong>{(() => { const denom = (questions && questions.length > 0) ? questions.length : 5; return denom > 0 ? Math.round((correctCount / denom) * 100) : 0; })()}%</strong>
+                  <strong>{questions.length > 0 ? Math.round((correctCount / questions.length) * 100) : 0}%</strong>
                 </div>
               </IonCol>
-              <IonCol size="4">
+              <IonCol size="6">
                 <div className="res-card">
                   <div className="icon-c orange"><IonIcon icon={ribbonOutline} /></div>
-                  <span>Moedas</span>
-                  <div className="tag-red">Em breve</div>
-                </div>
-              </IonCol>
-              <IonCol size="4">
-                <div className="res-card">
-                  <div className="icon-c purple"><IonIcon icon={flashOutline} /></div>
-                  <span>XP Ganho</span>
-                  <div className="tag-red">Em breve</div>
+                  <span>Total</span>
+                  <strong>{questions.length}</strong>
                 </div>
               </IonCol>
             </IonRow>
           </IonGrid>
 
-          <div className="accuracy-box section-margin">
-            <div className="acc-header">
-              <span>Taxa de Acerto</span>
-              <div className="tag-green">Done</div>
-            </div>
-            <IonProgressBar value={(questions && questions.length > 0) ? (correctCount / questions.length) : (correctCount / 5)} color="success"></IonProgressBar>
-          </div>
-
-          <div className="action-buttons section-margin">
+          <div className="action-buttons section-margin" style={{ marginTop: '40px' }}>
             <IonRow>
               <IonCol>
                 <IonButton expand="block" fill="outline" color="medium" onClick={() => history.replace('/app/home')}>
-                  <IonIcon slot="start" icon={homeOutline} /> Início
+                  <IonIcon slot="start" icon={homeOutline} /> Sair
                 </IonButton>
               </IonCol>
               <IonCol>
                 <IonButton expand="block" color="success" onClick={resetGame}>
-                  <IonIcon slot="start" icon={arrowRedoOutline} /> Jogar Novamente
+                  <IonIcon slot="start" icon={arrowRedoOutline} /> Jogar
                 </IonButton>
               </IonCol>
             </IonRow>
