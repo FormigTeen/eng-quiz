@@ -1,18 +1,24 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   IonContent, IonPage, IonAvatar, IonIcon,
-  IonGrid, IonRow, IonCol, IonSearchbar
+  IonGrid, IonRow, IonCol, IonSearchbar, IonSpinner
 } from '@ionic/react';
 import {
   ribbonOutline, flameOutline, locateOutline,
-  globeOutline, giftOutline, searchOutline,
-  shieldCheckmarkOutline, trophyOutline, medalOutline,
+  globeOutline, shieldCheckmarkOutline, trophyOutline, medalOutline,
   footballOutline
 } from 'ionicons/icons';
 import './Home.css';
 import { useAuth } from '../hooks/useAuth';
 import TopRightBar from '../components/TopRightBar';
 import { useHistory } from 'react-router-dom';
+
+// Definição do tipo de dado que vem do Strapi
+interface StrapiTeam {
+  id: number;
+  documentId: string;
+  Nome: string;
+}
 
 const Home: React.FC = () => {
   const { user } = useAuth();
@@ -24,6 +30,27 @@ const Home: React.FC = () => {
   const neg = (user?.score?.negative ?? 0);
   const accuracy = neg === 0 ? (pos > 0 ? 100 : 0) : Math.round((pos / (pos + neg)) * 100);
 
+  // --- NOVO CÓDIGO: ESTADOS PARA GUARDAR OS DADOS DO STRAPI ---
+  const [categories, setCategories] = useState<StrapiTeam[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // --- NOVO CÓDIGO: BUSCAR DADOS NO STRAPI ---
+  useEffect(() => {
+    fetch('http://localhost:1337/api/testes')
+      .then(response => response.json())
+      .then(result => {
+        // O Strapi retorna { data: [...] }
+        if (result.data) {
+          setCategories(result.data);
+        }
+        setLoading(false);
+      })
+      .catch(error => {
+        console.error("Erro ao buscar times no Strapi:", error);
+        setLoading(false);
+      });
+  }, []);
+
   // Dados falsos para os cards de Times (Mais Jogados)
   const teams = [
     { name: 'Flamengo', players: '1.2K', color: 'red', icon: flameOutline },
@@ -32,23 +59,24 @@ const Home: React.FC = () => {
     { name: 'São Paulo', players: '720', color: 'tricolor', icon: trophyOutline },
   ];
 
-  // Dados falsos para as Categorias
-  const categories = [
-    { name: 'Geral', qs: '10 perguntas', color: 'green-grad', icon: globeOutline },
-    { name: 'Flamengo', qs: '10 perguntas', color: 'red-grad', icon: flameOutline },
-    { name: 'Palmeiras', qs: '10 perguntas', color: 'green-flat', icon: footballOutline },
-    { name: 'Corinthians', qs: '10 perguntas', color: 'black-flat', icon: shieldCheckmarkOutline },
-    { name: 'São Paulo', qs: '10 perguntas', color: 'red-flat', icon: trophyOutline },
-    { name: 'Santos', qs: '10 perguntas', color: 'gray-flat', icon: medalOutline },
-    { name: 'Libertadores', qs: '10 perguntas', color: 'orange-flat', icon: trophyOutline },
-    { name: 'Copa Mundo', qs: '10 perguntas', color: 'purple-flat', icon: globeOutline },
-  ];
+  // Helper para dar uma cor e icone aleatório já que o banco só tem o Nome
+  const getCardStyle = (index: number) => {
+    const styles = [
+      { color: 'red-grad', icon: flameOutline },
+      { color: 'green-flat', icon: footballOutline },
+      { color: 'black-flat', icon: shieldCheckmarkOutline },
+      { color: 'orange-flat', icon: trophyOutline },
+      { color: 'purple-flat', icon: globeOutline },
+    ];
+    // Repete os estilos se tiver muitos times
+    return styles[index % styles.length];
+  };
 
   return (
     <IonPage>
       <IonContent fullscreen className="home-bg">
 
-        {/* 1. CABEÇALHO VERDE */}
+        {/* CABEÇALHO */}
         <div className="home-header">
           <div className="user-info">
             <IonAvatar className="small-avatar">
@@ -62,7 +90,7 @@ const Home: React.FC = () => {
           <TopRightBar coins={coins} onInvite={() => history.push('/app/invite')} />
         </div>
 
-        {/* 2. STATUS DO JOGADOR (3 CARDS) */}
+        {/* STATUS */}
         <div className="stats-container">
           <IonGrid>
             <IonRow>
@@ -93,7 +121,7 @@ const Home: React.FC = () => {
 
         <div className="content-padding">
 
-          {/* 3. BANNERS GRANDES (Jogo Rápido & Quiz Premiado) */}
+          {/* BANNERS */}
           <div className="section-header">
             <h3>Comece a Jogar</h3>
             <p>Escolha seu modo de jogo favorito</p>
@@ -111,20 +139,44 @@ const Home: React.FC = () => {
             <div className="players-online">Jogadores ativos <strong>2.8K</strong></div>
           </div>
 
-          <div className="game-card pink-card is-disabled">
-            <div className="soon-tag">Em breve!</div>
-            <div className="card-badge premium">💎 Premium</div>
-            <div className="card-content">
-              <IonIcon icon={giftOutline} />
-              <div>
-                <h2>Quiz Premiado</h2>
-                <p>Ganhe prêmios em moedas • Desafie amigos</p>
-              </div>
-            </div>
-            <div className="prize-info">Prêmio mínimo <strong>💰 100</strong></div>
-          </div>
 
-          {/* 4. MAIS JOGADOS (Rolagem Horizontal) */}
+          {/* --- AQUI ESTÁ A INTEGRAÇÃO COM O STRAPI --- */}
+          <div className="section-header mt-4">
+            <h3>Explorar Categorias</h3>
+            <p>Jogue com seu time</p>
+            {/* <p>Times vindos do Strapi (Database)</p> */}
+          </div>
+          <IonSearchbar placeholder="Buscar time, competição..." className="custom-search" />
+
+          {loading ? (
+            <div style={{ textAlign: 'center', padding: '20px' }}>
+              <IonSpinner name="crescent" />
+              <p>Carregando times...</p>
+            </div>
+          ) : (
+            <IonGrid className="categories-grid">
+              <IonRow>
+                {/* Loop nos dados que vieram do Strapi */}
+                {categories.map((item, index) => {
+                  const style = getCardStyle(index); // Pega uma cor aleatória
+                  return (
+                    <IonCol size="6" key={item.id}>
+                      {/* Removi a classe 'is-disabled' para parecer ativo */}
+                      <div className={`category-card ${style.color}`}>
+                        {/* Se quiser mostrar o ID para testar: <div className="soon-tag">ID: {item.id}</div> */}
+                        <IonIcon icon={style.icon} />
+                        <h4>{item.Nome}</h4>
+                        <span className="pill">10 perguntas</span>
+                      </div>
+                    </IonCol>
+                  );
+                })}
+              </IonRow>
+            </IonGrid>
+          )}
+          {/* ------------------------------------------- */}
+
+          {/* MAIS JOGADOS */}
           <div className="section-header mt-4">
             <h3>Mais Jogados</h3>
             <p>Os times mais populares entre os jogadores</p>
@@ -142,30 +194,6 @@ const Home: React.FC = () => {
             ))}
           </div>
 
-          {/* 5. EXPLORAR CATEGORIAS */}
-          <div className="section-header mt-4">
-            <h3>Explorar Categorias</h3>
-            <p>Encontre seu time ou competição favorita</p>
-          </div>
-
-          <IonSearchbar placeholder="Buscar time, competição..." className="custom-search" />
-
-          <IonGrid className="categories-grid">
-            <IonRow>
-              {categories.map((cat, index) => (
-                <IonCol size="6" key={index}>
-                  <div className={`category-card ${cat.color} is-disabled`}>
-                    <div className="soon-tag">Em breve!</div>
-                    <IonIcon icon={cat.icon} />
-                    <h4>{cat.name}</h4>
-                    <span className="pill">{cat.qs}</span>
-                  </div>
-                </IonCol>
-              ))}
-            </IonRow>
-          </IonGrid>
-
-          {/* Espaço extra para o menu inferior não cobrir o conteúdo */}
           <div style={{ height: '60px' }}></div>
 
         </div>

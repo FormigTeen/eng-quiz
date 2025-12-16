@@ -23,7 +23,7 @@ services:
   gateway:
     build: ./gateway
     env_file: .env
-    command: ["npm", "start", "--", "/app/services/*.service.js", "/app/services/**/*.service.js"]
+    command: [ "npm", "start", "--", "/app/services/*.service.js", "/app/services/**/*.service.js" ]
     depends_on:
       - nats
     ports:
@@ -33,7 +33,7 @@ services:
   ping:
     build: ./ping
     env_file: .env
-    command: ["npm", "start", "--", "/app/services/*.service.js", "/app/services/**/*.service.js"]
+    command: [ "npm", "start", "--", "/app/services/*.service.js", "/app/services/**/*.service.js" ]
     depends_on:
       - nats
     restart: unless-stopped
@@ -41,7 +41,7 @@ services:
   pong:
     build: ./pong
     env_file: .env
-    command: ["npm", "start", "--", "/app/services/*.service.js", "/app/services/**/*.service.js"]
+    command: [ "npm", "start", "--", "/app/services/*.service.js", "/app/services/**/*.service.js" ]
     depends_on:
       - nats
     restart: unless-stopped
@@ -54,7 +54,7 @@ services:
     ports:
       - "8080:8080"
     restart: unless-stopped
-    command: ["npm", "start", "--", "/app/services/*.service.js", "/app/services/**/*.service.js"]
+    command: [ "npm", "start", "--", "/app/services/*.service.js", "/app/services/**/*.service.js" ]
 
   auth:
     build: ./auth
@@ -64,7 +64,7 @@ services:
       - mongodb
       - redis
     restart: unless-stopped
-    command: ["npm", "start", "--", "/app/services/*.service.js", "/app/services/**/*.service.js"]
+    command: [ "npm", "start", "--", "/app/services/*.service.js", "/app/services/**/*.service.js" ]
 
   content:
     build: ./content
@@ -114,7 +114,7 @@ services:
       - nats
       - redis
     restart: unless-stopped
-    command: ["npm", "start", "--", "/app/services/*.service.js", "/app/services/**/*.service.js"]
+    command: [ "npm", "start", "--", "/app/services/*.service.js", "/app/services/**/*.service.js" ]
 
 networks:
   default:
