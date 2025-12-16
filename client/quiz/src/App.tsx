@@ -28,6 +28,7 @@ import Notifications from './pages/Notifications';
 import Profile from './pages/Profile';
 import Quiz from './pages/Quiz';
 import Invite from './pages/Invite';
+import PaymentConfirm from './pages/PaymentConfirm';
 
 /* CSS Imports padrão */
 import '@ionic/react/css/core.css';
@@ -100,6 +101,9 @@ const App: React.FC = () => (
 
         {/* Rota do Quiz */}
         <Route exact path="/game/quiz" component={Quiz} />
+
+        {/* Rota de Confirmação de Pagamento (Pública) */}
+        <Route exact path="/payment/confirm/:paymentId" component={PaymentConfirm} />
 
         {/* Redirecionamento da raiz */}
         <Route exact path="/">

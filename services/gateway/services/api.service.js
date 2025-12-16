@@ -45,7 +45,8 @@ module.exports = {
                     "gateway.payment.v1.createPayment",
                     "gateway.payment.v1.getPaymentStatus",
                     "gateway.payment.v1.listPayments",
-                    "gateway.payment.v1.webhook"
+                    "gateway.payment.v1.webhook",
+                    "gateway.payment.v1.confirmPayment"
                 ],
                 use: [
                   // Middleware para passar headers do webhook
@@ -82,7 +83,8 @@ module.exports = {
                     "POST payment/v1/create": "gateway.payment.v1.createPayment",
                     "GET payment/v1/status/:id": "gateway.payment.v1.getPaymentStatus",
                     "GET payment/v1/list": "gateway.payment.v1.listPayments",
-                    "POST payment/v1/webhook": "gateway.payment.v1.webhook"
+                    "POST payment/v1/webhook": "gateway.payment.v1.webhook",
+                    "POST payment/v1/confirm/:id": "gateway.payment.v1.confirmPayment"
                 },
                 callOptions: {},
                 bodyParsers: {
